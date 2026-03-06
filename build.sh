@@ -1,6 +1,9 @@
 #!/bin/bash
 set -euo pipefail
 
+# Kill running instance if any
+pkill -x Sati 2>/dev/null && sleep 0.5 || true
+
 echo "Building Sati..."
 
 swiftc -parse-as-library \
@@ -59,5 +62,5 @@ EOF
 codesign --force --sign - "build/Sati.app"
 rm -f Sati_binary
 
-echo "Done! App bundle at build/Sati.app"
-echo "Run with: open build/Sati.app"
+echo "Done! Launching Sati..."
+open build/Sati.app
