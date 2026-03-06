@@ -45,20 +45,20 @@ struct SnoozeChip: View {
     let accentGoldDim: Color
     let action: () -> Void
     let text: String?
-    let icon: String?
+    let isVLCIcon: Bool
     @State private var isHovered = false
 
     init(_ text: String, accentGold: Color, accentGoldDim: Color, action: @escaping () -> Void) {
         self.text = text
-        self.icon = nil
+        self.isVLCIcon = false
         self.accentGold = accentGold
         self.accentGoldDim = accentGoldDim
         self.action = action
     }
 
-    init(icon: String, accentGold: Color, accentGoldDim: Color, action: @escaping () -> Void) {
+    init(vlcIcon: Bool = true, accentGold: Color, accentGoldDim: Color, action: @escaping () -> Void) {
         self.text = nil
-        self.icon = icon
+        self.isVLCIcon = true
         self.accentGold = accentGold
         self.accentGoldDim = accentGoldDim
         self.action = action
@@ -72,9 +72,10 @@ struct SnoozeChip: View {
                         .font(.system(size: 11, weight: .medium))
                         .lineLimit(1)
                         .fixedSize()
-                } else if let icon = icon {
-                    Image(systemName: icon)
-                        .font(.system(size: 9, weight: .semibold))
+                } else if isVLCIcon {
+                    VLCConeShape()
+                        .fill(accentGold)
+                        .frame(width: 10, height: 11)
                 }
             }
             .foregroundColor(accentGold)
@@ -245,7 +246,7 @@ struct SettingsView: View {
             chip("1h") { reminderManager.snooze(minutes: 60) }
             chip("2h") { reminderManager.snooze(minutes: 120) }
             if vlcMonitor.isVLCRunning {
-                SnoozeChip(icon: "play.fill", accentGold: accentGold, accentGoldDim: accentGoldDim) {
+                SnoozeChip(vlcIcon: true, accentGold: accentGold, accentGoldDim: accentGoldDim) {
                     reminderManager.snoozeForVLC()
                     reminderManager.showExtendedSnooze = false
                 }
@@ -277,5 +278,29 @@ struct SettingsView: View {
         } else {
             intervalText = "\(reminderManager.intervalMinutes)"
         }
+    }
+}
+
+// VLC traffic cone silhouette
+struct VLCConeShape: Shape {
+    func path(in rect: CGRect) -> Path {
+        let w = rect.width
+        let h = rect.height
+        var p = Path()
+
+        // Cone body: narrow top, wide base
+        p.move(to: CGPoint(x: w * 0.35, y: h * 0.0))
+        p.addLine(to: CGPoint(x: w * 0.65, y: h * 0.0))
+        p.addLine(to: CGPoint(x: w * 0.80, y: h * 0.70))
+        p.addLine(to: CGPoint(x: w * 0.20, y: h * 0.70))
+        p.closeSubpath()
+
+        // Brim / base: wide flat bottom
+        p.addRoundedRect(
+            in: CGRect(x: w * 0.05, y: h * 0.70, width: w * 0.90, height: h * 0.30),
+            cornerSize: CGSize(width: h * 0.08, height: h * 0.08)
+        )
+
+        return p
     }
 }
