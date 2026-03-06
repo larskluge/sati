@@ -1,148 +1,274 @@
 import SwiftUI
 import ServiceManagement
 
+struct HoverButton<Label: View>: View {
+    let action: () -> Void
+    @ViewBuilder let label: () -> Label
+    @State private var isHovered = false
+
+    var body: some View {
+        Button(action: action) {
+            label()
+                .background(
+                    RoundedRectangle(cornerRadius: 6)
+                        .fill(.primary.opacity(isHovered ? 0.08 : 0))
+                )
+                .animation(.easeInOut(duration: 0.15), value: isHovered)
+        }
+        .buttonStyle(.plain)
+        .onHover { isHovered = $0 }
+    }
+}
+
+struct HoverCircleButton: View {
+    let systemName: String
+    let action: () -> Void
+    @State private var isHovered = false
+
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: systemName)
+                .font(.system(size: 10, weight: .medium))
+                .foregroundStyle(.secondary)
+                .frame(width: 26, height: 26)
+                .background(.primary.opacity(isHovered ? 0.12 : 0.05))
+                .clipShape(Circle())
+                .animation(.easeInOut(duration: 0.15), value: isHovered)
+        }
+        .buttonStyle(.plain)
+        .onHover { isHovered = $0 }
+    }
+}
+
+struct SnoozeChip: View {
+    let accentGold: Color
+    let accentGoldDim: Color
+    let action: () -> Void
+    let text: String?
+    let icon: String?
+    @State private var isHovered = false
+
+    init(_ text: String, accentGold: Color, accentGoldDim: Color, action: @escaping () -> Void) {
+        self.text = text
+        self.icon = nil
+        self.accentGold = accentGold
+        self.accentGoldDim = accentGoldDim
+        self.action = action
+    }
+
+    init(icon: String, accentGold: Color, accentGoldDim: Color, action: @escaping () -> Void) {
+        self.text = nil
+        self.icon = icon
+        self.accentGold = accentGold
+        self.accentGoldDim = accentGoldDim
+        self.action = action
+    }
+
+    var body: some View {
+        Button(action: action) {
+            Group {
+                if let text = text {
+                    Text(text)
+                        .font(.system(size: 11, weight: .medium))
+                        .lineLimit(1)
+                        .fixedSize()
+                } else if let icon = icon {
+                    Image(systemName: icon)
+                        .font(.system(size: 9, weight: .semibold))
+                }
+            }
+            .foregroundColor(accentGold)
+            .frame(height: 24)
+            .padding(.horizontal, 8)
+            .background(isHovered ? accentGold.opacity(0.25) : accentGoldDim)
+            .clipShape(Capsule())
+            .animation(.easeInOut(duration: 0.15), value: isHovered)
+        }
+        .buttonStyle(.plain)
+        .onHover { isHovered = $0 }
+    }
+}
+
 struct SettingsView: View {
     @ObservedObject var reminderManager: ReminderManager
     @ObservedObject var vlcMonitor: VLCMonitor
     @State private var launchAtLogin = SMAppService.mainApp.status == .enabled
     @State private var intervalText: String = ""
 
-    private let bgColor = Color(red: 0.961, green: 0.953, blue: 0.941)  // #F5F3F0
-    private let accentGold = Color(red: 0.769, green: 0.639, blue: 0.353)  // #C4A35A
-    private let textPrimary = Color(white: 0.2)
-    private let textSecondary = Color(white: 0.45)
+    private let accentGold = Color(red: 0.769, green: 0.639, blue: 0.353)
+    private let accentGoldDim = Color(red: 0.769, green: 0.639, blue: 0.353).opacity(0.15)
+    private let activeGreen = Color(red: 0.33, green: 0.72, blue: 0.44)
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(spacing: 0) {
             // Status
-            HStack {
+            HStack(spacing: 10) {
                 Circle()
-                    .fill(reminderManager.isSnoozed ? textSecondary : accentGold)
-                    .frame(width: 8, height: 8)
+                    .fill(reminderManager.isSnoozed ? Color.secondary.opacity(0.5) : activeGreen)
+                    .frame(width: 7, height: 7)
+
                 Text(reminderManager.statusText)
-                    .font(.system(size: 13, weight: .light))
-                    .foregroundColor(textPrimary)
+                    .font(.system(size: 12, weight: .regular))
+                    .foregroundStyle(reminderManager.isSnoozed ? .secondary : .primary)
+
                 Spacer()
-            }
-            .animation(.easeInOut(duration: 0.3), value: reminderManager.isSnoozed)
 
-            // Resume button when snoozed
-            if reminderManager.isSnoozed {
-                Button(action: { reminderManager.resume() }) {
-                    Text("Resume")
-                        .font(.system(size: 12, weight: .regular))
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 6)
-                        .background(accentGold)
-                        .cornerRadius(6)
-                }
-                .buttonStyle(.plain)
-            }
-
-            // Extended snooze options (shown when "More..." tapped on notification)
-            if reminderManager.showExtendedSnooze {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Snooze for...")
-                        .font(.system(size: 11, weight: .regular))
-                        .foregroundColor(textSecondary)
-
-                    HStack(spacing: 8) {
-                        snoozeButton("1 hour") { reminderManager.snooze(minutes: 60) }
-                        snoozeButton("2 hours") { reminderManager.snooze(minutes: 120) }
-                        if vlcMonitor.isVLCRunning {
-                            snoozeButton("While VLC") { reminderManager.snoozeForVLC() }
-                        }
+                if reminderManager.isSnoozed {
+                    HoverButton(action: { reminderManager.resume() }) {
+                        Text("Resume")
+                            .font(.system(size: 11, weight: .medium))
+                            .foregroundColor(accentGold)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
                     }
                 }
-                .transition(.opacity)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            .animation(.easeInOut(duration: 0.25), value: reminderManager.isSnoozed)
+
+            // Snooze row (when active)
+            if !reminderManager.isSnoozed {
+                snoozeRow(showAll: true)
             }
 
-            Divider()
+            // Extended snooze from notification "More..." action
+            if reminderManager.showExtendedSnooze && reminderManager.isSnoozed {
+                snoozeRow(showAll: false)
+            }
+
+            separator
 
             // Interval
-            HStack {
-                Text("Interval")
-                    .font(.system(size: 13, weight: .light))
-                    .foregroundColor(textPrimary)
+            HStack(spacing: 0) {
+                Text("Every")
+                    .font(.system(size: 12, weight: .regular))
+                    .foregroundStyle(.secondary)
+
                 Spacer()
+
+                HoverCircleButton(systemName: "minus") {
+                    let newVal = max(1, reminderManager.intervalMinutes - 1)
+                    reminderManager.intervalMinutes = newVal
+                    intervalText = "\(newVal)"
+                }
+
                 TextField("", text: $intervalText)
                     .textFieldStyle(.plain)
-                    .font(.system(size: 13, weight: .light))
-                    .frame(width: 40)
-                    .multilineTextAlignment(.trailing)
+                    .font(.system(size: 15, weight: .light, design: .rounded))
+                    .foregroundStyle(.primary)
+                    .multilineTextAlignment(.center)
+                    .frame(width: 36)
                     .onSubmit { applyInterval() }
-                Text("min")
-                    .font(.system(size: 12, weight: .light))
-                    .foregroundColor(textSecondary)
-                Stepper("", value: Binding(
-                    get: { reminderManager.intervalMinutes },
-                    set: {
-                        reminderManager.intervalMinutes = max(1, $0)
-                        intervalText = "\(reminderManager.intervalMinutes)"
-                    }
-                ), in: 1...1440)
-                .labelsHidden()
-            }
 
-            Divider()
+                Text("min")
+                    .font(.system(size: 11, weight: .regular))
+                    .foregroundStyle(.secondary)
+
+                HoverCircleButton(systemName: "plus") {
+                    let newVal = min(1440, reminderManager.intervalMinutes + 1)
+                    reminderManager.intervalMinutes = newVal
+                    intervalText = "\(newVal)"
+                }
+                .padding(.leading, 6)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+
+            separator
 
             // Launch at Login
-            Toggle(isOn: $launchAtLogin) {
+            HStack {
                 Text("Launch at Login")
-                    .font(.system(size: 13, weight: .light))
-                    .foregroundColor(textPrimary)
-            }
-            .toggleStyle(.switch)
-            .tint(accentGold)
-            .onChange(of: launchAtLogin) { newValue in
-                do {
-                    if newValue {
-                        try SMAppService.mainApp.register()
-                    } else {
-                        try SMAppService.mainApp.unregister()
+                    .font(.system(size: 12, weight: .regular))
+                    .foregroundStyle(.secondary)
+                Spacer()
+                Toggle("", isOn: $launchAtLogin)
+                    .toggleStyle(.switch)
+                    .tint(accentGold)
+                    .controlSize(.mini)
+                    .labelsHidden()
+                    .onChange(of: launchAtLogin) { newValue in
+                        do {
+                            if newValue {
+                                try SMAppService.mainApp.register()
+                            } else {
+                                try SMAppService.mainApp.unregister()
+                            }
+                        } catch {
+                            print("Launch at login error: \(error)")
+                            launchAtLogin = SMAppService.mainApp.status == .enabled
+                        }
                     }
-                } catch {
-                    print("Launch at login error: \(error)")
-                    launchAtLogin = SMAppService.mainApp.status == .enabled
-                }
             }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
 
-            Divider()
+            separator
 
             // Quit
-            Button(action: {
+            HoverButton(action: {
                 NSApplication.shared.terminate(nil)
             }) {
-                Text("Quit Sati")
-                    .font(.system(size: 13, weight: .light))
-                    .foregroundColor(textSecondary)
+                HStack {
+                    Text("Quit")
+                        .font(.system(size: 12, weight: .regular))
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 10)
+                .contentShape(Rectangle())
             }
-            .buttonStyle(.plain)
         }
-        .padding(20)
-        .frame(width: 280)
-        .background(bgColor)
+        .frame(width: 300)
         .onAppear {
             intervalText = "\(reminderManager.intervalMinutes)"
+        }
+    }
+
+    private func snoozeRow(showAll: Bool) -> some View {
+        HStack(spacing: 6) {
+            if showAll {
+                Text("Snooze")
+                    .font(.system(size: 12, weight: .regular))
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                    .fixedSize()
+                Spacer()
+            }
+
+            if showAll {
+                chip("15m") { reminderManager.snooze(minutes: 15) }
+                chip("30m") { reminderManager.snooze(minutes: 30) }
+            }
+            chip("1h") { reminderManager.snooze(minutes: 60) }
+            chip("2h") { reminderManager.snooze(minutes: 120) }
+            if vlcMonitor.isVLCRunning {
+                SnoozeChip(icon: "play.fill", accentGold: accentGold, accentGoldDim: accentGoldDim) {
+                    reminderManager.snoozeForVLC()
+                    reminderManager.showExtendedSnooze = false
+                }
+            }
+            if !showAll { Spacer() }
+        }
+        .padding(.horizontal, 16)
+        .padding(.bottom, 12)
+        .transition(.opacity.combined(with: .move(edge: .top)))
+    }
+
+    private func chip(_ title: String, action: @escaping () -> Void) -> some View {
+        SnoozeChip(title, accentGold: accentGold, accentGoldDim: accentGoldDim) {
+            action()
             reminderManager.showExtendedSnooze = false
         }
     }
 
-    private func snoozeButton(_ title: String, action: @escaping () -> Void) -> some View {
-        Button(action: {
-            action()
-            reminderManager.showExtendedSnooze = false
-        }) {
-            Text(title)
-                .font(.system(size: 11, weight: .regular))
-                .foregroundColor(textPrimary)
-                .padding(.horizontal, 10)
-                .padding(.vertical, 5)
-                .background(Color(white: 0.9))
-                .cornerRadius(5)
-        }
-        .buttonStyle(.plain)
+    private var separator: some View {
+        Rectangle()
+            .fill(.primary.opacity(0.08))
+            .frame(height: 1)
+            .padding(.horizontal, 12)
     }
 
     private func applyInterval() {
