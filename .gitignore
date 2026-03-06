@@ -1,0 +1,5 @@
+build/
+Sati_binary
+*.xcodeproj/xcuserdata/
+DerivedData/
+.DS_Store

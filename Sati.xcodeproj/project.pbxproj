@@ -1,0 +1,334 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		6E8F300B7B884FF09E293606 /* SatiApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B92D9F2CA8DC11CAF0AEB263 /* SatiApp.swift */; };
+		9269B9610B7771E3CD5E86A6 /* VLCMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3705ECF5E2D63288F8CCADF9 /* VLCMonitor.swift */; };
+		BA68AE8B16B73D1331A768F5 /* bowl.aif in Resources */ = {isa = PBXBuildFile; fileRef = A71830D47874818D443B81F7 /* bowl.aif */; };
+		DEF520734CB9A66D910A45EF /* ReminderManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCB070F936EDBF877954B2FD /* ReminderManager.swift */; };
+		F0F673CE294ED650413D37A9 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DA1824E8F01E47A37939CDD /* SettingsView.swift */; };
+		F6C5F207CF0C4FCBEC1B1B53 /* BuddhaIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 157FC7AD4EE9E23B8D9A0F4F /* BuddhaIcon.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		157FC7AD4EE9E23B8D9A0F4F /* BuddhaIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuddhaIcon.swift; sourceTree = "<group>"; };
+		3705ECF5E2D63288F8CCADF9 /* VLCMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VLCMonitor.swift; sourceTree = "<group>"; };
+		3C8C841072A9F8A45AC513E6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		9DA1824E8F01E47A37939CDD /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		A71830D47874818D443B81F7 /* bowl.aif */ = {isa = PBXFileReference; path = bowl.aif; sourceTree = "<group>"; };
+		B92D9F2CA8DC11CAF0AEB263 /* SatiApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SatiApp.swift; sourceTree = "<group>"; };
+		CCB070F936EDBF877954B2FD /* ReminderManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReminderManager.swift; sourceTree = "<group>"; };
+		DED203DB7C09BDB8182E9C10 /* Sati.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Sati.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		618EE4F99CA80DFBE783E968 /* Sounds */ = {
+			isa = PBXGroup;
+			children = (
+				A71830D47874818D443B81F7 /* bowl.aif */,
+			);
+			path = Sounds;
+			sourceTree = "<group>";
+		};
+		81ED6D2AADBFBE552C6BEA98 /* Sati */ = {
+			isa = PBXGroup;
+			children = (
+				157FC7AD4EE9E23B8D9A0F4F /* BuddhaIcon.swift */,
+				3C8C841072A9F8A45AC513E6 /* Info.plist */,
+				CCB070F936EDBF877954B2FD /* ReminderManager.swift */,
+				B92D9F2CA8DC11CAF0AEB263 /* SatiApp.swift */,
+				9DA1824E8F01E47A37939CDD /* SettingsView.swift */,
+				3705ECF5E2D63288F8CCADF9 /* VLCMonitor.swift */,
+				618EE4F99CA80DFBE783E968 /* Sounds */,
+			);
+			path = Sati;
+			sourceTree = "<group>";
+		};
+		914AC327C571084C6E1C0906 = {
+			isa = PBXGroup;
+			children = (
+				81ED6D2AADBFBE552C6BEA98 /* Sati */,
+				A3F715A9D5834715594B25C9 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		A3F715A9D5834715594B25C9 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				DED203DB7C09BDB8182E9C10 /* Sati.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		8F77E1E2F6352EE684ACE93F /* Sati */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 277FC1E8AFC3F06843A6ECC4 /* Build configuration list for PBXNativeTarget "Sati" */;
+			buildPhases = (
+				678DFB9BEBC793AD44AFB0EC /* Sources */,
+				CB1D0E5FBBB07903948F4716 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Sati;
+			packageProductDependencies = (
+			);
+			productName = Sati;
+			productReference = DED203DB7C09BDB8182E9C10 /* Sati.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		B78616BEDD23E005C77C280A /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					8F77E1E2F6352EE684ACE93F = {
+						ProvisioningStyle = Manual;
+					};
+				};
+			};
+			buildConfigurationList = 3CAC3450B8866F7428EE1D17 /* Build configuration list for PBXProject "Sati" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 914AC327C571084C6E1C0906;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = A3F715A9D5834715594B25C9 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				8F77E1E2F6352EE684ACE93F /* Sati */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		CB1D0E5FBBB07903948F4716 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BA68AE8B16B73D1331A768F5 /* bowl.aif in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		678DFB9BEBC793AD44AFB0EC /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F6C5F207CF0C4FCBEC1B1B53 /* BuddhaIcon.swift in Sources */,
+				DEF520734CB9A66D910A45EF /* ReminderManager.swift in Sources */,
+				6E8F300B7B884FF09E293606 /* SatiApp.swift in Sources */,
+				F0F673CE294ED650413D37A9 /* SettingsView.swift in Sources */,
+				9269B9610B7771E3CD5E86A6 /* VLCMonitor.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		0308F33D2C025BD20B25C6B4 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		448DA84AE7D378997BA31A82 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				INFOPLIST_FILE = Sati/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.sati.app;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.9;
+			};
+			name = Debug;
+		};
+		87C9780E952A4E89B8451042 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				INFOPLIST_FILE = Sati/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.sati.app;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.9;
+			};
+			name = Release;
+		};
+		D492522DC5AA487958FC2D99 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		277FC1E8AFC3F06843A6ECC4 /* Build configuration list for PBXNativeTarget "Sati" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				448DA84AE7D378997BA31A82 /* Debug */,
+				87C9780E952A4E89B8451042 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		3CAC3450B8866F7428EE1D17 /* Build configuration list for PBXProject "Sati" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0308F33D2C025BD20B25C6B4 /* Debug */,
+				D492522DC5AA487958FC2D99 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = B78616BEDD23E005C77C280A /* Project object */;
+}
