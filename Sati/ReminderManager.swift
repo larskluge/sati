@@ -153,12 +153,19 @@ final class ReminderManager: NSObject, ObservableObject, UNUserNotificationCente
         content.categoryIdentifier = Self.categoryID
         content.sound = UNNotificationSound(named: UNNotificationSoundName("bowl.aif"))
 
+        let id = UUID().uuidString
         let request = UNNotificationRequest(
-            identifier: UUID().uuidString,
+            identifier: id,
             content: content,
             trigger: nil
         )
-        UNUserNotificationCenter.current().add(request)
+        let center = UNUserNotificationCenter.current()
+        center.add(request)
+
+        // Remove from Notification Center and lock screen after the banner dismisses
+        DispatchQueue.main.asyncAfter(deadline: .now() + 8) {
+            center.removeDeliveredNotifications(withIdentifiers: [id])
+        }
     }
 
     // MARK: - UNUserNotificationCenterDelegate
