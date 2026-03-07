@@ -1,4 +1,15 @@
 import SwiftUI
+import AppKit
+
+class AppDelegate: NSObject, NSApplicationDelegate {
+    func applicationDidFinishLaunching(_ notification: Notification) {
+        // Set app icon programmatically (bypasses icon cache issues)
+        let iconPath = Bundle.main.bundlePath + "/Contents/Resources/AppIcon.icns"
+        if let icon = NSImage(contentsOfFile: iconPath) {
+            NSApplication.shared.applicationIconImage = icon
+        }
+    }
+}
 
 final class AppState: ObservableObject {
     let reminderManager = ReminderManager()
@@ -11,6 +22,7 @@ final class AppState: ObservableObject {
 
 @main
 struct SatiApp: App {
+    @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @StateObject private var appState = AppState()
 
     var body: some Scene {

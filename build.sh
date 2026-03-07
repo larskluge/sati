@@ -31,6 +31,7 @@ cp Sati/Sounds/bowl.aif "$APP_DIR/Resources/Sounds/bowl.aif"
 cp Sati/Sounds/bowl.aif "$APP_DIR/Resources/bowl.aif"
 cp Sati/Resources/buddha.png "$APP_DIR/Resources/buddha.png"
 cp Sati/Resources/buddha@2x.png "$APP_DIR/Resources/buddha@2x.png"
+cp Sati/Resources/AppIcon.icns "$APP_DIR/Resources/AppIcon.icns"
 
 cat > "$APP_DIR/Info.plist" << 'EOF'
 <?xml version="1.0" encoding="UTF-8"?>
@@ -42,7 +43,7 @@ cat > "$APP_DIR/Info.plist" << 'EOF'
 	<key>CFBundleExecutable</key>
 	<string>Sati</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.sati.app</string>
+	<string>com.sati.mindfulness</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
@@ -52,9 +53,11 @@ cat > "$APP_DIR/Info.plist" << 'EOF'
 	<key>CFBundleShortVersionString</key>
 	<string>1.0</string>
 	<key>CFBundleVersion</key>
-	<string>1</string>
+	<string>2</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>13.0</string>
+	<key>CFBundleIconFile</key>
+	<string>AppIcon</string>
 	<key>LSUIElement</key>
 	<true/>
 </dict>
@@ -63,6 +66,9 @@ EOF
 
 codesign --force --sign - "build/Sati.app"
 rm -f Sati_binary
+
+# Register with LaunchServices so macOS picks up the app icon for notifications
+/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -f "build/Sati.app"
 
 echo "Done! Launching Sati..."
 open build/Sati.app
