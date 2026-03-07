@@ -29,6 +29,8 @@ mkdir -p "$APP_DIR/Resources/Sounds"
 cp Sati_binary "$APP_DIR/MacOS/Sati"
 cp Sati/Sounds/bowl.aif "$APP_DIR/Resources/Sounds/bowl.aif"
 cp Sati/Sounds/bowl.aif "$APP_DIR/Resources/bowl.aif"
+cp Sati/Resources/buddha.png "$APP_DIR/Resources/buddha.png"
+cp Sati/Resources/buddha@2x.png "$APP_DIR/Resources/buddha@2x.png"
 
 cat > "$APP_DIR/Info.plist" << 'EOF'
 <?xml version="1.0" encoding="UTF-8"?>
