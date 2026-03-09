@@ -1,5 +1,5 @@
 build/
 Sati_binary
-*.xcodeproj/xcuserdata/
+xcuserdata/
 DerivedData/
 .DS_Store
