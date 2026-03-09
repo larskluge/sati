@@ -178,6 +178,23 @@ struct SettingsView: View {
 
             separator
 
+            // Sound
+            HStack {
+                Text("Sound")
+                    .font(.system(size: 12, weight: .regular))
+                    .foregroundStyle(.secondary)
+                Spacer()
+                Toggle("", isOn: $reminderManager.soundEnabled)
+                    .toggleStyle(.switch)
+                    .tint(accentGold)
+                    .controlSize(.mini)
+                    .labelsHidden()
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
+
+            separator
+
             // Launch at Login
             HStack {
                 Text("Launch at Login")

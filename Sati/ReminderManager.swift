@@ -21,6 +21,12 @@ final class ReminderManager: NSObject, ObservableObject, UNUserNotificationCente
         }
     }
 
+    @Published var soundEnabled: Bool {
+        didSet {
+            UserDefaults.standard.set(soundEnabled, forKey: "soundEnabled")
+        }
+    }
+
     var onOpenPopover: (() -> Void)?
 
     private var timer: Timer?
@@ -47,6 +53,7 @@ final class ReminderManager: NSObject, ObservableObject, UNUserNotificationCente
 
     override init() {
         self.intervalMinutes = UserDefaults.standard.object(forKey: "intervalMinutes") as? Int ?? 5
+        self.soundEnabled = UserDefaults.standard.object(forKey: "soundEnabled") as? Bool ?? true
         super.init()
 
         let center = UNUserNotificationCenter.current()
@@ -151,7 +158,7 @@ final class ReminderManager: NSObject, ObservableObject, UNUserNotificationCente
         content.title = "Sati"
         content.body = phrases.randomElement() ?? "Breathe"
         content.categoryIdentifier = Self.categoryID
-        content.sound = UNNotificationSound(named: UNNotificationSoundName("bowl.aif"))
+        content.sound = soundEnabled ? UNNotificationSound(named: UNNotificationSoundName("bowl.aif")) : nil
 
         let id = UUID().uuidString
         let request = UNNotificationRequest(
