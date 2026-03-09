@@ -259,9 +259,9 @@ struct SettingsView: View {
             if showAll {
                 chip("15m") { reminderManager.snooze(minutes: 15) }
                 chip("30m") { reminderManager.snooze(minutes: 30) }
+                chip("45m") { reminderManager.snooze(minutes: 45) }
             }
             chip("1h") { reminderManager.snooze(minutes: 60) }
-            chip("2h") { reminderManager.snooze(minutes: 120) }
             if vlcMonitor.isVLCRunning {
                 SnoozeChip(vlcIcon: true, accentGold: accentGold, accentGoldDim: accentGoldDim) {
                     reminderManager.snoozeForVLC()
