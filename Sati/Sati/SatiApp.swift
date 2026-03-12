@@ -24,11 +24,17 @@ final class AppState: ObservableObject {
     #if os(macOS)
     let settingsWindowController: SettingsWindowController
     #endif
+    #if os(iOS)
+    let watchConnectivitySender: WatchConnectivitySender
+    #endif
 
     init() {
         #if os(macOS)
         settingsWindowController = SettingsWindowController(topicManager: topicManager, reminderManager: reminderManager)
         reminderManager.connectVLCMonitor(vlcMonitor)
+        #endif
+        #if os(iOS)
+        watchConnectivitySender = WatchConnectivitySender(topicManager: topicManager, reminderManager: reminderManager)
         #endif
         reminderManager.topicManager = topicManager
     }

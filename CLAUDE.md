@@ -8,9 +8,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 bash build.sh    # kills running instance, builds with xcodebuild, registers with LaunchServices, launches
 ```
 
-Xcode project at `Sati/Sati.xcodeproj`. Multi-platform (macOS + iOS) with macOS as the primary target. Uses `PBXFileSystemSynchronizedRootGroup` — new files added to `Sati/Sati/` are automatically included in the build.
+Xcode project at `Sati/Sati.xcodeproj`. Multi-platform (macOS + iOS + watchOS) with macOS as the primary target. Uses `PBXFileSystemSynchronizedRootGroup` — new files added to `Sati/Sati/` or `Sati/SatiWatch/` are automatically included in their respective targets.
 
-Target: macOS 15.0+ / iOS 18.0+ (arm64), Swift 5. Bundle ID: `com.sati.Sati`.
+Targets: macOS 15.0+ / iOS 18.0+ (arm64), Swift 5. Bundle ID: `com.sati.Sati`. watchOS 11.0+ target `SatiWatch` with bundle ID `com.sati.Sati.watchkitapp`.
 
 Concurrency: project sets `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor` and `SWIFT_APPROACHABLE_CONCURRENCY = YES`. All types are implicitly `@MainActor`. Protocol delegate callbacks (e.g. `UNUserNotificationCenterDelegate`) need `nonisolated` markers. `SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES` means transitive imports don't count — always import modules explicitly (e.g. `import Combine` for `@Published`).
 
@@ -18,7 +18,7 @@ Concurrency: project sets `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor` and `SWIFT
 
 Menu bar-only app on macOS (`LSUIElement=true`, no dock icon) using `MenuBarExtra` with `.window` style for a popover UI. iOS shows a placeholder `ContentView`.
 
-macOS-specific files are wrapped in `#if os(macOS)`. Platform-agnostic core logic (`ReminderManager`, `TopicManager`) can be shared with future targets (watchOS).
+macOS-specific files are wrapped in `#if os(macOS)`. iOS-specific code uses `#if os(iOS)`. The watchOS target (`SatiWatch/`) is a separate set of files — not shared code.
 
 **`SatiApp.swift`** — Cross-platform entry point. `AppDelegate` sets the app icon on macOS. `AppState` owns the core objects and wires them together. `MenuBarExtra` renders `SettingsView` as its popover and `BuddhaIcon` as its menu bar image on macOS; `ContentView` on iOS.
 
@@ -35,6 +35,24 @@ macOS-specific files are wrapped in `#if os(macOS)`. Platform-agnostic core logi
 **`BuddhaIcon.swift`** — macOS-only (`#if os(macOS)`). Loads a PNG template image from the app bundle (`buddha@2x.png`) for the menu bar icon. Set as template image for automatic menu bar color adaptation. Snoozed state reduces opacity and adds "z" text. Falls back to a circle if image not found.
 
 **`ContentView.swift`** — iOS placeholder UI.
+
+**`WatchConnectivitySender.swift`** — iOS-only (`#if os(iOS)`). Observes `TopicManager` and `ReminderManager` via Combine, sends `updateApplicationContext` to paired Apple Watch with topics, offset, and interval. Debounced 0.5s.
+
+### watchOS Target (`Sati/SatiWatch/`)
+
+No system notifications on watchOS. Uses `WKExtendedRuntimeSession` (mindfulness type) for background haptic vibration + topic display.
+
+**`SatiWatchApp.swift`** — Entry point. Owns `WatchReminderManager`, `WatchTopicStore`, `WatchConnectivityReceiver`.
+
+**`WatchReminderManager.swift`** — Core watch logic. Runs `WKExtendedRuntimeSession(.mindfulness)` for background execution. 1-second timer fires haptic (`WKInterfaceDevice.current().play()`) at interval. Additive snooze (+15m per tap). Auto-restarts session on expiry.
+
+**`WatchTopicStore.swift`** — Local topic storage with half-day rotation formula (mirrors `TopicManager`). Updated by connectivity receiver.
+
+**`WatchConnectivityReceiver.swift`** — `WCSessionDelegate` on watch side. Receives `applicationContext` from iPhone with topics, offset, interval.
+
+**`WatchMainView.swift`** — Main UI: status dot, topic in gold `「」` brackets, snooze button with additive time, gear → settings.
+
+**`WatchSettingsView.swift`** — Interval stepper, resume button, haptic type picker (temporary, for experimentation).
 
 ## Resources
 
