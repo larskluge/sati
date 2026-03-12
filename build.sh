@@ -1,9 +1,6 @@
 #!/bin/bash
 set -euo pipefail
 
-# Kill running instance if any
-pkill -x Sati 2>/dev/null && sleep 0.5 || true
-
 echo "Building Sati..."
 
 xcodebuild -project Sati/Sati.xcodeproj \
@@ -26,5 +23,4 @@ fi
 # Register with LaunchServices so macOS picks up the app icon for notifications
 /System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -f "$APP_PATH"
 
-echo "Done! Launching Sati..."
-open "$APP_PATH"
+echo "Done!"
