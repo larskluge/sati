@@ -33,16 +33,15 @@ final class AppState: ObservableObject {
 
     init() {
         #if os(macOS)
-        settingsWindowController = SettingsWindowController(topicManager: topicManager, reminderManager: reminderManager)
+        peerSyncManager = PeerSyncManager(topicManager: topicManager, reminderManager: reminderManager)
+        settingsWindowController = SettingsWindowController(topicManager: topicManager, reminderManager: reminderManager, peerSyncManager: peerSyncManager)
         reminderManager.connectVLCMonitor(vlcMonitor)
         #endif
         #if os(iOS)
+        peerSyncManager = PeerSyncManager(topicManager: topicManager, reminderManager: reminderManager)
         watchConnectivitySender = WatchConnectivitySender(topicManager: topicManager, reminderManager: reminderManager)
         #endif
         reminderManager.topicManager = topicManager
-        #if os(macOS) || os(iOS)
-        peerSyncManager = PeerSyncManager(topicManager: topicManager, reminderManager: reminderManager)
-        #endif
     }
 }
 
@@ -69,7 +68,7 @@ struct SatiApp: App {
         .menuBarExtraStyle(.window)
         #else
         WindowGroup {
-            ContentView(topicManager: appState.topicManager, reminderManager: appState.reminderManager)
+            ContentView(topicManager: appState.topicManager, reminderManager: appState.reminderManager, peerSyncManager: appState.peerSyncManager)
         }
         #endif
     }

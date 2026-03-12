@@ -121,13 +121,6 @@ struct SettingsView: View {
                         .foregroundColor(accentGold)
                 }
 
-                if peerSyncManager.peerConnected {
-                    Circle()
-                        .fill(accentGold.opacity(0.6))
-                        .frame(width: 5, height: 5)
-                        .help("Peer connected")
-                }
-
                 Spacer()
 
                 if reminderManager.isSnoozed {
@@ -139,6 +132,11 @@ struct SettingsView: View {
                             .padding(.vertical, 4)
                     }
                 }
+
+                Circle()
+                    .fill(peerSyncManager.peerConnected ? activeGreen : Color.secondary.opacity(0.3))
+                    .frame(width: 6, height: 6)
+                    .help(peerSyncManager.peerConnected ? "Peer connected" : "No peer connected")
 
                 Button(action: {
                     NSApp.keyWindow?.close()
@@ -227,6 +225,9 @@ struct SettingsView: View {
         .frame(width: 300)
         .onAppear {
             intervalText = "\(reminderManager.intervalMinutes)"
+        }
+        .onChange(of: reminderManager.intervalMinutes) { _, newValue in
+            intervalText = "\(newValue)"
         }
     }
 

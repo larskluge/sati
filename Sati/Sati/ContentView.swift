@@ -4,11 +4,18 @@ import SwiftUI
 struct ContentView: View {
     @ObservedObject var topicManager: TopicManager
     @ObservedObject var reminderManager: ReminderManager
+    @ObservedObject var peerSyncManager: PeerSyncManager
     @State private var showingAddTopic = false
     @State private var newTopicName = ""
 
     private let accentGold = Color(red: 0.769, green: 0.639, blue: 0.353)
     private let activeGreen = Color(red: 0.33, green: 0.72, blue: 0.44)
+
+    private static let syncTimeFormatter: RelativeDateTimeFormatter = {
+        let f = RelativeDateTimeFormatter()
+        f.unitsStyle = .abbreviated
+        return f
+    }()
 
     var body: some View {
         NavigationStack {
@@ -31,6 +38,38 @@ struct ContentView: View {
                     Stepper("Every \(reminderManager.intervalMinutes) min",
                             value: $reminderManager.intervalMinutes,
                             in: 1...120)
+                }
+
+                Section("Sync") {
+                    HStack(spacing: 10) {
+                        Image(systemName: peerSyncManager.peerConnected ? "antenna.radiowaves.left.and.right" : "antenna.radiowaves.left.and.right.slash")
+                            .foregroundColor(peerSyncManager.peerConnected ? activeGreen : .secondary)
+
+                        VStack(alignment: .leading, spacing: 2) {
+                            if peerSyncManager.peerConnected, let name = peerSyncManager.connectedPeerName {
+                                Text(name)
+                            } else {
+                                Text("No device connected")
+                                    .foregroundStyle(.secondary)
+                            }
+
+                            if let syncDate = peerSyncManager.lastSyncDate {
+                                Text("Synced \(Self.syncTimeFormatter.localizedString(for: syncDate, relativeTo: Date()))")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            } else {
+                                Text("Not yet synced")
+                                    .font(.caption)
+                                    .foregroundStyle(.tertiary)
+                            }
+                        }
+
+                        Spacer()
+
+                        Circle()
+                            .fill(peerSyncManager.peerConnected ? activeGreen : Color.secondary.opacity(0.3))
+                            .frame(width: 7, height: 7)
+                    }
                 }
             }
             .navigationTitle("Sati")

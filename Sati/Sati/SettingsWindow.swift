@@ -8,10 +8,12 @@ final class SettingsWindowController {
     private var window: NSWindow?
     private let topicManager: TopicManager
     private let reminderManager: ReminderManager
+    private let peerSyncManager: PeerSyncManager
 
-    init(topicManager: TopicManager, reminderManager: ReminderManager) {
+    init(topicManager: TopicManager, reminderManager: ReminderManager, peerSyncManager: PeerSyncManager) {
         self.topicManager = topicManager
         self.reminderManager = reminderManager
+        self.peerSyncManager = peerSyncManager
     }
 
     func open() {
@@ -23,7 +25,8 @@ final class SettingsWindowController {
 
         let contentView = SettingsContentView(
             topicManager: topicManager,
-            reminderManager: reminderManager
+            reminderManager: reminderManager,
+            peerSyncManager: peerSyncManager
         )
         let hosting = NSHostingController(rootView: contentView)
 
@@ -47,6 +50,7 @@ final class SettingsWindowController {
 private struct SettingsContentView: View {
     @ObservedObject var topicManager: TopicManager
     @ObservedObject var reminderManager: ReminderManager
+    @ObservedObject var peerSyncManager: PeerSyncManager
     @State private var newTopic = ""
     @State private var launchAtLogin = SMAppService.mainApp.status == .enabled
     @State private var hoveredTopicIndex: Int? = nil
@@ -63,6 +67,7 @@ private struct SettingsContentView: View {
 
             topicsSection
             generalSection
+            syncSection
         }
         .padding(.horizontal, 24)
         .padding(.bottom, 24)
@@ -337,6 +342,63 @@ private struct SettingsContentView: View {
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
+    }
+
+    // MARK: - Sync Section
+
+    private static let syncTimeFormatter: RelativeDateTimeFormatter = {
+        let f = RelativeDateTimeFormatter()
+        f.unitsStyle = .abbreviated
+        return f
+    }()
+
+    private var syncSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            sectionHeader("Sync")
+
+            GroupBox {
+                HStack(spacing: 10) {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 6)
+                            .fill(peerSyncManager.peerConnected ? activeGreen.opacity(0.15) : .primary.opacity(0.04))
+                            .frame(width: 28, height: 28)
+                        Image(systemName: peerSyncManager.peerConnected ? "antenna.radiowaves.left.and.right" : "antenna.radiowaves.left.and.right.slash")
+                            .font(.system(size: 13))
+                            .foregroundColor(peerSyncManager.peerConnected ? activeGreen : .secondary)
+                    }
+
+                    VStack(alignment: .leading, spacing: 1) {
+                        if peerSyncManager.peerConnected, let name = peerSyncManager.connectedPeerName {
+                            Text(name)
+                                .font(.system(size: 13))
+                        } else {
+                            Text("No device connected")
+                                .font(.system(size: 13))
+                                .foregroundStyle(.secondary)
+                        }
+
+                        if let syncDate = peerSyncManager.lastSyncDate {
+                            Text("Synced \(Self.syncTimeFormatter.localizedString(for: syncDate, relativeTo: Date()))")
+                                .font(.system(size: 11))
+                                .foregroundStyle(.secondary)
+                        } else {
+                            Text("Not yet synced")
+                                .font(.system(size: 11))
+                                .foregroundStyle(.tertiary)
+                        }
+                    }
+
+                    Spacer()
+
+                    Circle()
+                        .fill(peerSyncManager.peerConnected ? activeGreen : .secondary.opacity(0.3))
+                        .frame(width: 7, height: 7)
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+            }
+            .groupBoxStyle(SettingsGroupBoxStyle())
+        }
     }
 
     // MARK: - Helpers

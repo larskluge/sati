@@ -20,6 +20,8 @@ final class PeerSyncManager: NSObject, ObservableObject {
     private static let updatedAtKey = "peerSyncUpdatedAt"
 
     @Published var peerConnected: Bool = false
+    @Published var connectedPeerName: String? = nil
+    @Published var lastSyncDate: Date? = nil
 
     var updatedAt: Date {
         get {
@@ -101,6 +103,7 @@ final class PeerSyncManager: NSObject, ObservableObject {
         lastSentHash = hash
         guard let data = try? JSONSerialization.data(withJSONObject: payload) else { return }
         try? session.send(data, toPeers: session.connectedPeers, with: .reliable)
+        lastSyncDate = Date()
     }
 
     private func applyReceived(_ data: Data) {
@@ -123,13 +126,16 @@ final class PeerSyncManager: NSObject, ObservableObject {
             reminderManager.intervalMinutes = interval
         }
         updatedAt = receivedDate
+        lastSyncDate = Date()
     }
 }
 
 extension PeerSyncManager: MCSessionDelegate {
     nonisolated func session(_ session: MCSession, peer peerID: MCPeerID, didChange state: MCSessionState) {
         Task { @MainActor in
-            self.peerConnected = !session.connectedPeers.isEmpty
+            let peers = session.connectedPeers
+            self.peerConnected = !peers.isEmpty
+            self.connectedPeerName = peers.first?.displayName
             if state == .connected {
                 self.broadcastState()
             }
