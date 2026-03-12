@@ -9,7 +9,11 @@ final class ReminderManager: NSObject, ObservableObject, UNUserNotificationCente
     static let snooze30Action = "SNOOZE_30"
     static let moreAction = "MORE"
 
-    @Published var isActive: Bool = true
+    @Published var isActive: Bool {
+        didSet {
+            UserDefaults.standard.set(isActive, forKey: "isActive")
+        }
+    }
     @Published var snoozeUntil: Date?
     @Published var snoozedForVLC: Bool = false
     @Published var showExtendedSnooze: Bool = false
@@ -52,6 +56,16 @@ final class ReminderManager: NSObject, ObservableObject, UNUserNotificationCente
     ]
 
     override init() {
+        #if os(iOS)
+        let activeDefault = false
+        #else
+        let activeDefault = true
+        #endif
+        if UserDefaults.standard.object(forKey: "isActive") != nil {
+            self.isActive = UserDefaults.standard.bool(forKey: "isActive")
+        } else {
+            self.isActive = activeDefault
+        }
         self.intervalMinutes = UserDefaults.standard.object(forKey: "intervalMinutes") as? Int ?? 5
         self.soundEnabled = UserDefaults.standard.object(forKey: "soundEnabled") as? Bool ?? true
         super.init()

@@ -34,7 +34,8 @@ struct ContentView: View {
                     }
                 }
 
-                Section("Interval") {
+                Section("Reminders") {
+                    Toggle("Notifications", isOn: $reminderManager.isActive)
                     Stepper("Every \(reminderManager.intervalMinutes) min",
                             value: $reminderManager.intervalMinutes,
                             in: 1...120)
