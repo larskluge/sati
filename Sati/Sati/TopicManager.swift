@@ -76,6 +76,10 @@ final class TopicManager: ObservableObject {
         restoreActive(newPinned)
     }
 
+    func setOffset(_ newOffset: Int) {
+        offset = newOffset
+    }
+
     func activate(index: Int) {
         guard topics.indices.contains(index) else { return }
         restoreActive(index)
