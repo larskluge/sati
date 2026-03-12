@@ -94,6 +94,7 @@ struct SettingsView: View {
     @ObservedObject var reminderManager: ReminderManager
     @ObservedObject var vlcMonitor: VLCMonitor
     @ObservedObject var topicManager: TopicManager
+    @ObservedObject var peerSyncManager: PeerSyncManager
     var onOpenSettings: () -> Void
     @State private var intervalText: String = ""
     @State private var gearHovered = false
@@ -118,6 +119,13 @@ struct SettingsView: View {
                     Text("「\(topic)」")
                         .font(.system(size: 11, weight: .medium))
                         .foregroundColor(accentGold)
+                }
+
+                if peerSyncManager.peerConnected {
+                    Circle()
+                        .fill(accentGold.opacity(0.6))
+                        .frame(width: 5, height: 5)
+                        .help("Peer connected")
                 }
 
                 Spacer()
