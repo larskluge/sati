@@ -27,6 +27,7 @@ final class ReminderManager: NSObject, ObservableObject, UNUserNotificationCente
         }
     }
 
+    var topicManager: TopicManager?
     var onOpenPopover: (() -> Void)?
 
     private var timer: Timer?
@@ -155,8 +156,13 @@ final class ReminderManager: NSObject, ObservableObject, UNUserNotificationCente
 
     private func sendNotification() {
         let content = UNMutableNotificationContent()
-        content.title = "Sati"
-        content.body = phrases.randomElement() ?? "Breathe"
+        content.title = ""
+        let phrase = phrases.randomElement() ?? "Breathe"
+        if let topic = topicManager?.activeTopic {
+            content.body = "「\(topic)」 \(phrase)"
+        } else {
+            content.body = phrase
+        }
         content.categoryIdentifier = Self.categoryID
         content.sound = soundEnabled ? UNNotificationSound(named: UNNotificationSoundName("bowl.aif")) : nil
 
