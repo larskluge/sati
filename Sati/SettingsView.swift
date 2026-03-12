@@ -95,6 +95,7 @@ struct SettingsView: View {
     @ObservedObject var topicManager: TopicManager
     var onOpenSettings: () -> Void
     @State private var intervalText: String = ""
+    @State private var gearHovered = false
 
     private let accentGold = Color(red: 0.769, green: 0.639, blue: 0.353)
     private let accentGoldDim = Color(red: 0.769, green: 0.639, blue: 0.353).opacity(0.15)
@@ -114,9 +115,20 @@ struct SettingsView: View {
 
                 Spacer()
 
-                HoverCircleButton(systemName: "gearshape") {
+                Button(action: {
+                    NSApp.keyWindow?.close()
                     onOpenSettings()
+                }) {
+                    Image(systemName: "gearshape")
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundStyle(.secondary)
+                        .frame(width: 28, height: 28)
+                        .background(.primary.opacity(gearHovered ? 0.12 : 0.05))
+                        .clipShape(Circle())
+                        .animation(.easeInOut(duration: 0.15), value: gearHovered)
                 }
+                .buttonStyle(.plain)
+                .onHover { gearHovered = $0 }
 
                 if reminderManager.isSnoozed {
                     HoverButton(action: { reminderManager.resume() }) {

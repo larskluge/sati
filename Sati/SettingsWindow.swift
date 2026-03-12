@@ -26,11 +26,12 @@ final class SettingsWindowController {
         )
         let hosting = NSHostingController(rootView: contentView)
 
+        hosting.sizingOptions = .intrinsicContentSize
+
         let w = NSWindow(contentViewController: hosting)
         w.title = "Sati Settings"
         w.titlebarAppearsTransparent = true
         w.styleMask = [.titled, .closable, .fullSizeContentView]
-        w.setContentSize(NSSize(width: 460, height: 560))
         w.center()
         w.isReleasedWhenClosed = false
         w.backgroundColor = .windowBackgroundColor
@@ -56,18 +57,15 @@ private struct SettingsContentView: View {
     private let activeGreen = Color(red: 0.33, green: 0.72, blue: 0.44)
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                // Extra top spacing for titlebar
-                Spacer().frame(height: 8)
+        VStack(alignment: .leading, spacing: 20) {
+            Spacer().frame(height: 8)
 
-                topicsSection
-                generalSection
-            }
-            .padding(.horizontal, 24)
-            .padding(.bottom, 24)
+            topicsSection
+            generalSection
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding(.horizontal, 24)
+        .padding(.bottom, 24)
+        .frame(width: 460)
     }
 
     // MARK: - Topics Section
