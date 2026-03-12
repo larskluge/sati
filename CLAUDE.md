@@ -5,7 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Build & Run
 
 ```bash
-bash build.sh    # kills running instance, builds with xcodebuild, registers with LaunchServices, launches
+bash build.sh    # builds with xcodebuild, registers with LaunchServices
 ```
 
 Xcode project at `Sati/Sati.xcodeproj`. Multi-platform (macOS + iOS + watchOS) with macOS as the primary target. Uses `PBXFileSystemSynchronizedRootGroup` — new files added to `Sati/Sati/` or `Sati/SatiWatch/` are automatically included in their respective targets.
@@ -16,13 +16,13 @@ Concurrency: project sets `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor` and `SWIFT
 
 ## Architecture
 
-Menu bar-only app on macOS (`LSUIElement=true`, no dock icon) using `MenuBarExtra` with `.window` style for a popover UI. iOS shows a placeholder `ContentView`.
+Menu bar-only app on macOS (`LSUIElement=true`, no dock icon) using `MenuBarExtra` with `.window` style for a popover UI. iOS shows topic management + settings. macOS↔iOS sync via MultipeerConnectivity on local network.
 
 macOS-specific files are wrapped in `#if os(macOS)`. iOS-specific code uses `#if os(iOS)`. The watchOS target (`SatiWatch/`) is a separate set of files — not shared code.
 
 **`SatiApp.swift`** — Cross-platform entry point. `AppDelegate` sets the app icon on macOS. `AppState` owns the core objects and wires them together. `MenuBarExtra` renders `SettingsView` as its popover and `BuddhaIcon` as its menu bar image on macOS; `ContentView` on iOS.
 
-**`ReminderManager.swift`** — Core logic (platform-agnostic except `connectVLCMonitor`). `ObservableObject` that runs a 1-second timer, sends `UNUserNotificationCenter` notifications with rotating mindfulness phrases and a singing bowl sound when the interval elapses. Notifications are temporary — auto-removed from Notification Center after 8 seconds. Handles snooze (timed or VLC-based). Registers notification actions (15m, 30m, More...) and acts as `UNUserNotificationCenterDelegate`. Settings persisted via `UserDefaults`.
+**`ReminderManager.swift`** — Core logic (platform-agnostic except `connectVLCMonitor`). `ObservableObject` that runs a 1-second timer, sends `UNUserNotificationCenter` notifications with rotating mindfulness phrases and a singing bowl sound when the interval elapses. Notifications are temporary — auto-removed from Notification Center after 8 seconds. Handles snooze (timed or VLC-based). Registers notification actions (15m, 30m, More...) and acts as `UNUserNotificationCenterDelegate`. `isActive` defaults to `true` on macOS, `false` on iOS. Settings persisted via `UserDefaults`.
 
 **`TopicManager.swift`** — Platform-agnostic. Manages rotating "topics of investigation" on a half-day schedule. Persists topics and active offset to `UserDefaults`.
 
@@ -30,11 +30,13 @@ macOS-specific files are wrapped in `#if os(macOS)`. iOS-specific code uses `#if
 
 **`SettingsView.swift`** — macOS-only (`#if os(macOS)`). Popover UI. Contains reusable hover-aware button components (`HoverButton`, `HoverCircleButton`, `SnoozeChip`) and a custom `VLCConeShape`. Uses semantic SwiftUI colors (`.primary`/`.secondary`) for light/dark mode support.
 
-**`SettingsWindow.swift`** — macOS-only (`#if os(macOS)`). Standalone settings window with topics management, notification sound toggle, and launch-at-login toggle.
+**`SettingsWindow.swift`** — macOS-only (`#if os(macOS)`). Standalone settings window with topics management, notification sound toggle, launch-at-login toggle, and peer sync status.
 
 **`BuddhaIcon.swift`** — macOS-only (`#if os(macOS)`). Loads a PNG template image from the app bundle (`buddha@2x.png`) for the menu bar icon. Set as template image for automatic menu bar color adaptation. Snoozed state reduces opacity and adds "z" text. Falls back to a circle if image not found.
 
-**`ContentView.swift`** — iOS placeholder UI.
+**`ContentView.swift`** — iOS-only (`#if os(iOS)`). Topic management (view, reorder, activate, add/remove), interval stepper, notifications toggle (off by default), and peer sync status.
+
+**`PeerSyncManager.swift`** — macOS + iOS (`#if os(macOS) || os(iOS)`). MultipeerConnectivity-based sync over local network. Uses Bonjour service `_sati-sync._tcp`. Auto-discovers peers, auto-accepts connections. Broadcasts topics/offset/interval on local change (debounced 0.5s). Receives state with last-write-wins conflict resolution via `updatedAt` timestamp. Tracks `peerConnected`, `connectedPeerName`, `lastSyncDate`.
 
 **`WatchConnectivitySender.swift`** — iOS-only (`#if os(iOS)`). Observes `TopicManager` and `ReminderManager` via Combine, sends `updateApplicationContext` to paired Apple Watch with topics, offset, and interval. Debounced 0.5s.
 

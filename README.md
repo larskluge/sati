@@ -2,7 +2,7 @@
 
 A mindfulness reminder app for Apple platforms. Sends periodic notifications with rotating phrases and a singing bowl sound.
 
-![macOS 15+](https://img.shields.io/badge/macOS-15%2B-blue) ![iOS 18+](https://img.shields.io/badge/iOS-18%2B-blue)
+![macOS 15+](https://img.shields.io/badge/macOS-15%2B-blue) ![iOS 18+](https://img.shields.io/badge/iOS-18%2B-blue) ![watchOS 11+](https://img.shields.io/badge/watchOS-11%2B-blue)
 
 ## Features
 
@@ -16,16 +16,20 @@ A mindfulness reminder app for Apple platforms. Sends periodic notifications wit
 - Menu bar-only on macOS — no dock icon, just a buddha icon in the menu bar
 - Snoozed state shown with dimmed icon and "z" indicator
 - Supports light and dark mode
+- iOS app with topic management, interval editing, and notifications toggle
+- macOS↔iOS sync via MultipeerConnectivity on local network (auto-discover, last-write-wins)
+- watchOS companion app with haptic reminders and topic display
+- iPhone→Watch sync via WatchConnectivity
 
 ## Build
 
-Requires Xcode. macOS 15+ / iOS 18+.
+Requires Xcode. macOS 15+ / iOS 18+ / watchOS 11+.
 
 ```bash
 bash build.sh
 ```
 
-This kills any running instance, builds with `xcodebuild`, registers with LaunchServices, and launches the app. Or open `Sati/Sati.xcodeproj` in Xcode directly.
+This builds with `xcodebuild` and registers with LaunchServices. Or open `Sati/Sati.xcodeproj` in Xcode directly. For iOS and watchOS, build and run from Xcode to a connected device.
 
 ## Install
 
@@ -54,11 +58,23 @@ Sati/Sati/
   SettingsView.swift     # Popover UI with hover-aware components (macOS-only)
   SettingsWindow.swift   # Standalone settings window (macOS-only)
   BuddhaIcon.swift       # Menu bar template image with snooze state (macOS-only)
-  ContentView.swift      # iOS placeholder
+  ContentView.swift      # Topic management, interval, notifications toggle (iOS)
+  PeerSyncManager.swift  # MultipeerConnectivity sync (macOS + iOS)
+  WatchConnectivitySender.swift  # iPhone→Watch sync (iOS-only)
+  Info.plist             # Bonjour + local network permissions
+  Sati.entitlements      # Sandbox + network entitlements (macOS)
   Resources/
     buddha@2x.png        # Menu bar icon (44x44 template)
     buddha.png           # Menu bar icon (22x22 template)
     AppIcon.icns         # Notification icon
   Sounds/
     bowl.aif             # Singing bowl notification sound
+
+Sati/SatiWatch/
+  SatiWatchApp.swift     # Entry point, owns watch managers
+  WatchReminderManager.swift  # Haptic reminders via WKExtendedRuntimeSession
+  WatchTopicStore.swift  # Local topic storage with half-day rotation
+  WatchConnectivityReceiver.swift  # Receives state from iPhone
+  WatchMainView.swift    # Main UI: status, topic, snooze
+  WatchSettingsView.swift  # Interval stepper, haptic picker
 ```
