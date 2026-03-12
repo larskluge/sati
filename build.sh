@@ -19,6 +19,8 @@ swiftc -parse-as-library \
   Sati/VLCMonitor.swift \
   Sati/SettingsView.swift \
   Sati/BuddhaIcon.swift \
+  Sati/TopicManager.swift \
+  Sati/SettingsWindow.swift \
   -o Sati_binary
 
 APP_DIR="build/Sati.app/Contents"

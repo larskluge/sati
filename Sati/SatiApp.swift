@@ -14,8 +14,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 final class AppState: ObservableObject {
     let reminderManager = ReminderManager()
     let vlcMonitor = VLCMonitor()
+    let topicManager = TopicManager()
+    let settingsWindowController: SettingsWindowController
 
     init() {
+        settingsWindowController = SettingsWindowController(topicManager: topicManager, reminderManager: reminderManager)
+        reminderManager.topicManager = topicManager
         reminderManager.connectVLCMonitor(vlcMonitor)
     }
 }
@@ -29,7 +33,9 @@ struct SatiApp: App {
         MenuBarExtra {
             SettingsView(
                 reminderManager: appState.reminderManager,
-                vlcMonitor: appState.vlcMonitor
+                vlcMonitor: appState.vlcMonitor,
+                topicManager: appState.topicManager,
+                onOpenSettings: { [weak appState] in appState?.settingsWindowController.open() }
             )
         } label: {
             Image(nsImage: BuddhaIcon.makeImage(snoozed: appState.reminderManager.isSnoozed))

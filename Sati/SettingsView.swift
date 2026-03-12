@@ -1,5 +1,4 @@
 import SwiftUI
-import ServiceManagement
 
 struct HoverButton<Label: View>: View {
     let action: () -> Void
@@ -93,7 +92,8 @@ struct SnoozeChip: View {
 struct SettingsView: View {
     @ObservedObject var reminderManager: ReminderManager
     @ObservedObject var vlcMonitor: VLCMonitor
-    @State private var launchAtLogin = SMAppService.mainApp.status == .enabled
+    @ObservedObject var topicManager: TopicManager
+    var onOpenSettings: () -> Void
     @State private var intervalText: String = ""
 
     private let accentGold = Color(red: 0.769, green: 0.639, blue: 0.353)
@@ -113,6 +113,10 @@ struct SettingsView: View {
                     .foregroundStyle(reminderManager.isSnoozed ? .secondary : .primary)
 
                 Spacer()
+
+                HoverCircleButton(systemName: "gearshape") {
+                    onOpenSettings()
+                }
 
                 if reminderManager.isSnoozed {
                     HoverButton(action: { reminderManager.resume() }) {
@@ -178,51 +182,19 @@ struct SettingsView: View {
 
             separator
 
-            // Sound
-            HStack {
-                Text("Sound")
-                    .font(.system(size: 12, weight: .regular))
-                    .foregroundStyle(.secondary)
-                Spacer()
-                Toggle("", isOn: $reminderManager.soundEnabled)
-                    .toggleStyle(.switch)
-                    .tint(accentGold)
-                    .controlSize(.mini)
-                    .labelsHidden()
+            // Active topic
+            if let topic = topicManager.activeTopic {
+                HStack {
+                    Text("「\(topic)」")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundColor(accentGold)
+                    Spacer()
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 10)
+
+                separator
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 10)
-
-            separator
-
-            // Launch at Login
-            HStack {
-                Text("Launch at Login")
-                    .font(.system(size: 12, weight: .regular))
-                    .foregroundStyle(.secondary)
-                Spacer()
-                Toggle("", isOn: $launchAtLogin)
-                    .toggleStyle(.switch)
-                    .tint(accentGold)
-                    .controlSize(.mini)
-                    .labelsHidden()
-                    .onChange(of: launchAtLogin) { newValue in
-                        do {
-                            if newValue {
-                                try SMAppService.mainApp.register()
-                            } else {
-                                try SMAppService.mainApp.unregister()
-                            }
-                        } catch {
-                            print("Launch at login error: \(error)")
-                            launchAtLogin = SMAppService.mainApp.status == .enabled
-                        }
-                    }
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 10)
-
-            separator
 
             // Quit
             HoverButton(action: {
