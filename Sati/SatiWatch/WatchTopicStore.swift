@@ -36,7 +36,7 @@ final class WatchTopicStore: ObservableObject {
            let decoded = try? JSONDecoder().decode([String].self, from: data) {
             self.topics = decoded
         } else {
-            self.topics = []
+            self.topics = ["Impermanence", "Non-self", "Suffering"] // TODO: remove hardcoded test topics
         }
         self.offset = UserDefaults.standard.integer(forKey: Self.offsetKey)
     }

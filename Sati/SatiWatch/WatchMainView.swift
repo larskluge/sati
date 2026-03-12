@@ -14,13 +14,6 @@ struct WatchMainView: View {
                 VStack(spacing: 12) {
                     statusRow
 
-                    if let topic = topicStore.activeTopic {
-                        Text("\u{300C}\(topic)\u{300D}")
-                            .font(.body)
-                            .foregroundStyle(gold)
-                            .multilineTextAlignment(.center)
-                    }
-
                     if let phrase = reminderManager.lastReminderPhrase {
                         Text(phrase)
                             .font(.footnote)
@@ -33,14 +26,29 @@ struct WatchMainView: View {
 
                     snoozeButton
 
+                    if reminderManager.isSnoozed {
+                        Button {
+                            reminderManager.resume()
+                        } label: {
+                            HStack(spacing: 4) {
+                                Image(systemName: "play.fill")
+                                Text("Resume")
+                                    .font(.footnote)
+                            }
+                        }
+                    }
+
+                }
+                .padding(.horizontal)
+            }
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
                     NavigationLink {
                         WatchSettingsView(reminderManager: reminderManager)
                     } label: {
                         Image(systemName: "gear")
-                            .font(.body)
                     }
                 }
-                .padding(.horizontal)
             }
         }
     }
@@ -50,17 +58,20 @@ struct WatchMainView: View {
             Circle()
                 .fill(reminderManager.isSnoozed ? Color.gray : green)
                 .frame(width: 8, height: 8)
-            Text(statusText)
-                .font(.footnote)
-                .foregroundStyle(.secondary)
+            if let minutes = reminderManager.snoozeRemainingMinutes {
+                Text("Snoozed \(minutes)m")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            } else if let topic = topicStore.activeTopic {
+                Text("\u{300C}\(topic)\u{300D}")
+                    .font(.footnote)
+                    .foregroundStyle(gold)
+            } else {
+                Text("Active")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
         }
-    }
-
-    private var statusText: String {
-        if let minutes = reminderManager.snoozeRemainingMinutes {
-            return "Snoozed \(minutes)m"
-        }
-        return "Active"
     }
 
     private var snoozeButton: some View {
@@ -69,8 +80,8 @@ struct WatchMainView: View {
         } label: {
             HStack(spacing: 4) {
                 Image(systemName: "moon.zzz")
-                if let minutes = reminderManager.snoozeRemainingMinutes {
-                    Text("+15m (\(minutes)m)")
+                if reminderManager.isSnoozed {
+                    Text("+15m")
                         .font(.footnote)
                 } else {
                     Text("Snooze 15m")

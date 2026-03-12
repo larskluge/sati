@@ -16,11 +16,30 @@ struct WatchSettingsView: View {
     var body: some View {
         List {
             Section("Interval") {
-                Stepper(
-                    "Every \(reminderManager.intervalMinutes)m",
-                    value: $reminderManager.intervalMinutes,
-                    in: 1...1440
-                )
+                HStack {
+                    Button {
+                        if reminderManager.intervalMinutes > 1 {
+                            reminderManager.intervalMinutes -= 1
+                        }
+                    } label: {
+                        Image(systemName: "minus")
+                    }
+                    .buttonStyle(.bordered)
+
+                    Spacer()
+                    Text("Every \(reminderManager.intervalMinutes)m")
+                        .font(.body)
+                    Spacer()
+
+                    Button {
+                        if reminderManager.intervalMinutes < 1440 {
+                            reminderManager.intervalMinutes += 1
+                        }
+                    } label: {
+                        Image(systemName: "plus")
+                    }
+                    .buttonStyle(.bordered)
+                }
             }
 
             if reminderManager.isSnoozed {
