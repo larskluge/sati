@@ -156,11 +156,12 @@ final class ReminderManager: NSObject, ObservableObject, UNUserNotificationCente
 
     private func sendNotification() {
         let content = UNMutableNotificationContent()
-        content.title = ""
         let phrase = phrases.randomElement() ?? "Breathe"
         if let topic = topicManager?.activeTopic {
-            content.body = "「\(topic)」 \(phrase)"
+            content.title = "「\(topic)」"
+            content.body = phrase
         } else {
+            content.title = ""
             content.body = phrase
         }
         content.categoryIdentifier = Self.categoryID
