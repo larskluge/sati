@@ -113,7 +113,23 @@ struct SettingsView: View {
                     .font(.system(size: 12, weight: .regular))
                     .foregroundStyle(reminderManager.isSnoozed ? .secondary : .primary)
 
+                if !reminderManager.isSnoozed, let topic = topicManager.activeTopic {
+                    Text("「\(topic)」")
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundColor(accentGold)
+                }
+
                 Spacer()
+
+                if reminderManager.isSnoozed {
+                    HoverButton(action: { reminderManager.resume() }) {
+                        Text("Resume")
+                            .font(.system(size: 11, weight: .medium))
+                            .foregroundColor(accentGold)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                    }
+                }
 
                 Button(action: {
                     NSApp.keyWindow?.close()
@@ -129,16 +145,6 @@ struct SettingsView: View {
                 }
                 .buttonStyle(.plain)
                 .onHover { gearHovered = $0 }
-
-                if reminderManager.isSnoozed {
-                    HoverButton(action: { reminderManager.resume() }) {
-                        Text("Resume")
-                            .font(.system(size: 11, weight: .medium))
-                            .foregroundColor(accentGold)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                    }
-                }
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
@@ -193,20 +199,6 @@ struct SettingsView: View {
             .padding(.vertical, 12)
 
             separator
-
-            // Active topic
-            if let topic = topicManager.activeTopic {
-                HStack {
-                    Text("「\(topic)」")
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundColor(accentGold)
-                    Spacer()
-                }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 10)
-
-                separator
-            }
 
             // Quit
             HoverButton(action: {
