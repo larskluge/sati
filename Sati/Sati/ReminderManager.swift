@@ -166,6 +166,7 @@ final class ReminderManager: NSObject, ObservableObject, UNUserNotificationCente
     }
 
     private func sendNotification() {
+        SatiLog.info("Reminder", "sending notification")
         let content = UNMutableNotificationContent()
         let phrase = phrases.randomElement() ?? "Breathe"
         if let topic = topicManager?.activeTopic {
