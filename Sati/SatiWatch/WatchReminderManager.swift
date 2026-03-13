@@ -8,11 +8,12 @@ final class WatchReminderManager: NSObject, ObservableObject, WKExtendedRuntimeS
     @Published var snoozeUntil: Date?
     @Published var lastReminderDate: Date = Date()
     @Published var lastReminderPhrase: String?
-    @Published var hapticType: WKHapticType = .notification
+    @Published var hapticType: WKHapticType = .success
 
     @Published var intervalMinutes: Int {
         didSet {
             UserDefaults.standard.set(intervalMinutes, forKey: "watchIntervalMinutes")
+            SatiLog.info("WatchReminder", "intervalMinutes changed to \(intervalMinutes)")
         }
     }
 
@@ -40,17 +41,22 @@ final class WatchReminderManager: NSObject, ObservableObject, WKExtendedRuntimeS
     override init() {
         self.intervalMinutes = UserDefaults.standard.object(forKey: "watchIntervalMinutes") as? Int ?? 5
         super.init()
+        SatiLog.info("WatchReminder", "init: interval=\(intervalMinutes)min isActive=\(isActive)")
         startSession()
     }
 
     // MARK: - Session Management
 
     func startSession() {
-        guard session == nil || session?.state == .invalid else { return }
+        guard session == nil || session?.state == .invalid else {
+            SatiLog.warning("WatchReminder", "startSession skipped — session state=\(session?.state.rawValue ?? -1)")
+            return
+        }
         let newSession = WKExtendedRuntimeSession()
         newSession.delegate = self
         newSession.start()
         session = newSession
+        SatiLog.info("WatchReminder", "session started")
         startTimer()
     }
 
@@ -94,7 +100,14 @@ final class WatchReminderManager: NSObject, ObservableObject, WKExtendedRuntimeS
 
     // MARK: - Tick
 
+    private var tickCount = 0
+
     private func tick() {
+        tickCount += 1
+        if tickCount % 30 == 1 {
+            let elapsed = Date().timeIntervalSince(lastReminderDate)
+            SatiLog.info("WatchReminder", "tick #\(tickCount): isActive=\(isActive) isSnoozed=\(isSnoozed) elapsed=\(Int(elapsed))s interval=\(intervalMinutes)min session=\(session?.state.rawValue ?? -1)")
+        }
         guard isActive else { return }
 
         if isSnoozed {
@@ -113,6 +126,7 @@ final class WatchReminderManager: NSObject, ObservableObject, WKExtendedRuntimeS
     }
 
     private func fireReminder() {
+        SatiLog.info("WatchReminder", "FIRING haptic=\(hapticType.rawValue)")
         WKInterfaceDevice.current().play(hapticType)
         lastReminderPhrase = phrases.randomElement()
     }
@@ -124,6 +138,7 @@ final class WatchReminderManager: NSObject, ObservableObject, WKExtendedRuntimeS
         didInvalidateWith reason: WKExtendedRuntimeSessionInvalidationReason,
         error: (any Error)?
     ) {
+        SatiLog.warning("WatchReminder", "session invalidated: reason=\(reason.rawValue) error=\(String(describing: error))")
         Task { @MainActor in
             self.session = nil
             self.startSession()
@@ -132,11 +147,14 @@ final class WatchReminderManager: NSObject, ObservableObject, WKExtendedRuntimeS
 
     nonisolated func extendedRuntimeSessionDidStart(
         _ extendedRuntimeSession: WKExtendedRuntimeSession
-    ) {}
+    ) {
+        SatiLog.info("WatchReminder", "session did start running")
+    }
 
     nonisolated func extendedRuntimeSessionWillExpire(
         _ extendedRuntimeSession: WKExtendedRuntimeSession
     ) {
+        SatiLog.warning("WatchReminder", "session will expire — restarting")
         Task { @MainActor in
             self.session = nil
             self.startSession()
