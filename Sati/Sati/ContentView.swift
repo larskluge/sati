@@ -2,9 +2,9 @@
 import SwiftUI
 
 struct ContentView: View {
+    @ObservedObject var appState: AppState
     @ObservedObject var topicManager: TopicManager
     @ObservedObject var reminderManager: ReminderManager
-    @ObservedObject var peerSyncManager: PeerSyncManager
     @State private var showingAddTopic = false
     @State private var newTopicName = ""
 
@@ -41,35 +41,37 @@ struct ContentView: View {
                             in: 1...120)
                 }
 
-                Section("Sync") {
-                    HStack(spacing: 10) {
-                        Image(systemName: peerSyncManager.peerConnected ? "antenna.radiowaves.left.and.right" : "antenna.radiowaves.left.and.right.slash")
-                            .foregroundColor(peerSyncManager.peerConnected ? activeGreen : .secondary)
+                if let sync = appState.peerSyncManager {
+                    Section("Sync") {
+                        HStack(spacing: 10) {
+                            Image(systemName: sync.peerConnected ? "antenna.radiowaves.left.and.right" : "antenna.radiowaves.left.and.right.slash")
+                                .foregroundColor(sync.peerConnected ? activeGreen : .secondary)
 
-                        VStack(alignment: .leading, spacing: 2) {
-                            if peerSyncManager.peerConnected, let name = peerSyncManager.connectedPeerName {
-                                Text(name)
-                            } else {
-                                Text("No device connected")
-                                    .foregroundStyle(.secondary)
+                            VStack(alignment: .leading, spacing: 2) {
+                                if sync.peerConnected, let name = sync.connectedPeerName {
+                                    Text(name)
+                                } else {
+                                    Text("No device connected")
+                                        .foregroundStyle(.secondary)
+                                }
+
+                                if let syncDate = sync.lastSyncDate {
+                                    Text("Synced \(Self.syncTimeFormatter.localizedString(for: syncDate, relativeTo: Date()))")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                } else {
+                                    Text("Not yet synced")
+                                        .font(.caption)
+                                        .foregroundStyle(.tertiary)
+                                }
                             }
 
-                            if let syncDate = peerSyncManager.lastSyncDate {
-                                Text("Synced \(Self.syncTimeFormatter.localizedString(for: syncDate, relativeTo: Date()))")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                            } else {
-                                Text("Not yet synced")
-                                    .font(.caption)
-                                    .foregroundStyle(.tertiary)
-                            }
+                            Spacer()
+
+                            Circle()
+                                .fill(sync.peerConnected ? activeGreen : Color.secondary.opacity(0.3))
+                                .frame(width: 7, height: 7)
                         }
-
-                        Spacer()
-
-                        Circle()
-                            .fill(peerSyncManager.peerConnected ? activeGreen : Color.secondary.opacity(0.3))
-                            .frame(width: 7, height: 7)
                     }
                 }
             }
@@ -93,6 +95,9 @@ struct ContentView: View {
                 Button("Cancel", role: .cancel) {
                     newTopicName = ""
                 }
+            }
+            .task {
+                appState.startBackgroundServices()
             }
         }
     }

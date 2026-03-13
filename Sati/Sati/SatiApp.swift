@@ -25,24 +25,32 @@ final class AppState: ObservableObject {
     let settingsWindowController: SettingsWindowController
     #endif
     #if os(iOS)
-    let watchConnectivitySender: WatchConnectivitySender
+    var watchConnectivitySender: WatchConnectivitySender?
+    private var didStart = false
     #endif
     #if os(macOS) || os(iOS)
-    let peerSyncManager: PeerSyncManager
+    var peerSyncManager: PeerSyncManager?
     #endif
 
     init() {
         #if os(macOS)
         peerSyncManager = PeerSyncManager(topicManager: topicManager, reminderManager: reminderManager)
-        settingsWindowController = SettingsWindowController(topicManager: topicManager, reminderManager: reminderManager, peerSyncManager: peerSyncManager)
+        settingsWindowController = SettingsWindowController(topicManager: topicManager, reminderManager: reminderManager, peerSyncManager: peerSyncManager!)
         reminderManager.connectVLCMonitor(vlcMonitor)
-        #endif
-        #if os(iOS)
-        peerSyncManager = PeerSyncManager(topicManager: topicManager, reminderManager: reminderManager)
-        watchConnectivitySender = WatchConnectivitySender(topicManager: topicManager, reminderManager: reminderManager)
         #endif
         reminderManager.topicManager = topicManager
     }
+
+    #if os(iOS)
+    func startBackgroundServices() {
+        guard !didStart else { return }
+        didStart = true
+        SatiLog.info("App", "starting background services")
+        peerSyncManager = PeerSyncManager(topicManager: topicManager, reminderManager: reminderManager)
+        watchConnectivitySender = WatchConnectivitySender(topicManager: topicManager, reminderManager: reminderManager)
+        SatiLog.info("App", "background services started")
+    }
+    #endif
 }
 
 @main
@@ -59,7 +67,7 @@ struct SatiApp: App {
                 reminderManager: appState.reminderManager,
                 vlcMonitor: appState.vlcMonitor,
                 topicManager: appState.topicManager,
-                peerSyncManager: appState.peerSyncManager,
+                peerSyncManager: appState.peerSyncManager!,
                 onOpenSettings: { [weak appState] in appState?.settingsWindowController.open() }
             )
         } label: {
@@ -68,7 +76,7 @@ struct SatiApp: App {
         .menuBarExtraStyle(.window)
         #else
         WindowGroup {
-            ContentView(topicManager: appState.topicManager, reminderManager: appState.reminderManager, peerSyncManager: appState.peerSyncManager)
+            ContentView(appState: appState, topicManager: appState.topicManager, reminderManager: appState.reminderManager)
         }
         #endif
     }
