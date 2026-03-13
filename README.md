@@ -18,8 +18,8 @@ A mindfulness reminder app for Apple platforms. Sends periodic notifications wit
 - Supports light and dark mode
 - iOS app with topic management, interval editing, and notifications toggle
 - macOS↔iOS sync via MultipeerConnectivity on local network (auto-discover, last-write-wins)
-- watchOS companion app with haptic reminders and topic display
-- iPhone→Watch sync via WatchConnectivity
+- watchOS companion app with haptic reminders (success pattern) and topic display
+- iPhone→Watch sync via WatchConnectivity (topics, active topic, interval)
 
 ## Build
 
@@ -61,6 +61,7 @@ Sati/Sati/
   ContentView.swift      # Topic management, interval, notifications toggle (iOS)
   PeerSyncManager.swift  # MultipeerConnectivity sync (macOS + iOS)
   WatchConnectivitySender.swift  # iPhone→Watch sync (iOS-only)
+  SatiLog.swift          # Dual file+os.Logger logging
   Info.plist             # Bonjour + local network permissions
   Sati.entitlements      # Sandbox + network entitlements (macOS)
   Resources/
@@ -77,4 +78,6 @@ Sati/SatiWatch/
   WatchConnectivityReceiver.swift  # Receives state from iPhone
   WatchMainView.swift    # Main UI: status, topic, snooze
   WatchSettingsView.swift  # Interval stepper, haptic picker
+  WatchDebugView.swift   # WCSession debug info
+  SatiLog.swift          # Dual file+os.Logger logging
 ```
