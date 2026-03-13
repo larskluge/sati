@@ -35,13 +35,17 @@ final class WatchTopicStore: ObservableObject {
         if let data = UserDefaults.standard.data(forKey: Self.topicsKey),
            let decoded = try? JSONDecoder().decode([String].self, from: data) {
             self.topics = decoded
+            SatiLog.info("WatchTopicStore", "init: loaded topics=\(decoded)")
         } else {
-            self.topics = ["Impermanence", "Non-self", "Suffering"] // TODO: remove hardcoded test topics
+            self.topics = []
+            SatiLog.info("WatchTopicStore", "init: no saved topics, starting empty")
         }
         self.offset = UserDefaults.standard.integer(forKey: Self.offsetKey)
+        SatiLog.info("WatchTopicStore", "init: offset=\(offset)")
     }
 
     func update(topics: [String], offset: Int) {
+        SatiLog.info("WatchTopicStore", "update: topics=\(topics) offset=\(offset)")
         self.topics = topics
         self.offset = offset
     }
@@ -49,6 +53,8 @@ final class WatchTopicStore: ObservableObject {
     private func save() {
         if let data = try? JSONEncoder().encode(topics) {
             UserDefaults.standard.set(data, forKey: Self.topicsKey)
+        } else {
+            SatiLog.error("WatchTopicStore", "failed to encode topics")
         }
     }
 }

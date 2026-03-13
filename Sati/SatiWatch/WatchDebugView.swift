@@ -11,13 +11,15 @@ struct WatchDebugView: View {
     var body: some View {
         List {
             Section("Connectivity Status") {
-                statusRow("Activated", connectivity.isActivated ? "✓" : "✗")
+                HStack {
+                    Text("Activated")
+                    Spacer()
+                    Text(connectivity.isActivated ? "✓" : "✗")
+                        .foregroundColor(connectivity.isActivated ? .green : .red)
+                }
                 
                 if WCSession.isSupported() {
-                    let session = WCSession.default
-                    statusRow("Paired", session.isPaired ? "✓" : "✗")
-                    statusRow("Reachable", session.isReachable ? "✓" : "✗")
-                    statusRow("Companion Installed", session.isCompanionAppInstalled ? "✓" : "✗")
+                    connectivityStatusRows
                 } else {
                     Text("WCSession not supported")
                         .foregroundColor(.red)
@@ -60,12 +62,39 @@ struct WatchDebugView: View {
         .navigationTitle("Debug")
     }
     
-    private func statusRow(_ label: String, _ value: String) -> some View {
+    @ViewBuilder
+    private var connectivityStatusRows: some View {
+        let session = WCSession.default
+        
         HStack {
-            Text(label)
+            Text("Reachable")
             Spacer()
-            Text(value)
-                .foregroundColor(value == "✓" ? .green : .red)
+            Text(session.isReachable ? "✓" : "✗")
+                .foregroundColor(session.isReachable ? .green : .red)
+        }
+        
+        HStack {
+            Text("Companion Installed")
+            Spacer()
+            Text(session.isCompanionAppInstalled ? "✓" : "✗")
+                .foregroundColor(session.isCompanionAppInstalled ? .green : .red)
+        }
+        
+        HStack {
+            Text("State")
+            Spacer()
+            Text(activationStateText)
+                .foregroundColor(session.activationState == .activated ? .green : .orange)
+        }
+    }
+    
+    private var activationStateText: String {
+        let session = WCSession.default
+        switch session.activationState {
+        case .notActivated: return "Not Activated"
+        case .inactive: return "Inactive"
+        case .activated: return "Activated"
+        @unknown default: return "Unknown"
         }
     }
     
@@ -79,7 +108,6 @@ struct WatchDebugView: View {
         if WCSession.isSupported() {
             let session = WCSession.default
             print("Session state: \(session.activationState.rawValue)")
-            print("isPaired: \(session.isPaired)")
             print("isReachable: \(session.isReachable)")
             print("isCompanionAppInstalled: \(session.isCompanionAppInstalled)")
             print("Received context: \(session.receivedApplicationContext)")
