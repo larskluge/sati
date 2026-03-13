@@ -60,6 +60,10 @@ final class PeerSyncManager: NSObject, ObservableObject {
             .sink { [weak self] (_: [String]) in self?.localDidChange() }
             .store(in: &cancellables)
 
+        topicManager.$offset
+            .sink { [weak self] (_: Int) in self?.localDidChange() }
+            .store(in: &cancellables)
+
         reminderManager.$intervalMinutes
             .sink { [weak self] (_: Int) in self?.localDidChange() }
             .store(in: &cancellables)
@@ -104,10 +108,14 @@ final class PeerSyncManager: NSObject, ObservableObject {
         guard let data = try? JSONSerialization.data(withJSONObject: payload) else { return }
         try? session.send(data, toPeers: session.connectedPeers, with: .reliable)
         lastSyncDate = Date()
+        SatiLog.info("PeerSync", "broadcast to \(session.connectedPeers.count) peers")
     }
 
     private func applyReceived(_ data: Data) {
-        guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else { return }
+        guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            SatiLog.error("PeerSync", "failed to decode received data")
+            return
+        }
 
         let receivedHash = payloadHash(json)
         if receivedHash == lastSentHash { return }
@@ -132,6 +140,7 @@ final class PeerSyncManager: NSObject, ObservableObject {
 
 extension PeerSyncManager: MCSessionDelegate {
     nonisolated func session(_ session: MCSession, peer peerID: MCPeerID, didChange state: MCSessionState) {
+        SatiLog.info("PeerSync", "peer \(peerID.displayName) state=\(state.rawValue)")
         Task { @MainActor in
             let peers = session.connectedPeers
             self.peerConnected = !peers.isEmpty

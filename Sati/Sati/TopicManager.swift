@@ -15,7 +15,7 @@ final class TopicManager: ObservableObject {
     }
 
     /// Offset added to halfDaySlot so mutations don't shift the active topic.
-    private(set) var offset: Int {
+    @Published private(set) var offset: Int {
         didSet { UserDefaults.standard.set(offset, forKey: Self.offsetKey) }
     }
 
