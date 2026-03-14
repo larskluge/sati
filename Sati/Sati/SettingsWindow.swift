@@ -346,11 +346,6 @@ private struct SettingsContentView: View {
 
     // MARK: - Sync Section
 
-    private static let syncTimeFormatter: RelativeDateTimeFormatter = {
-        let f = RelativeDateTimeFormatter()
-        f.unitsStyle = .abbreviated
-        return f
-    }()
 
     private var syncSection: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -378,7 +373,7 @@ private struct SettingsContentView: View {
                         }
 
                         if let syncDate = peerSyncManager.lastSyncDate {
-                            Text("Synced \(Self.syncTimeFormatter.localizedString(for: syncDate, relativeTo: Date()))")
+                            Text(SyncFormatting.relativeSyncTime(for: syncDate))
                                 .font(.system(size: 11))
                                 .foregroundStyle(.secondary)
                         } else {

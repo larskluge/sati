@@ -65,6 +65,7 @@ final class WatchConnectivityReceiver: NSObject, ObservableObject, WCSessionDele
             if !context.isEmpty {
                 Task { @MainActor in
                     self.applyContext(context)
+                    self.lastReceivedDate = Date()
                 }
             } else {
                 SatiLog.info("WCRecv", "no existing context found")

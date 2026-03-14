@@ -116,12 +116,6 @@ private struct PeerSyncRow: View {
     @ObservedObject var sync: PeerSyncManager
     private let activeGreen = Color(red: 0.33, green: 0.72, blue: 0.44)
 
-    private static let formatter: RelativeDateTimeFormatter = {
-        let f = RelativeDateTimeFormatter()
-        f.unitsStyle = .abbreviated
-        return f
-    }()
-
     var body: some View {
         HStack(spacing: 10) {
             Image(systemName: "antenna.radiowaves.left.and.right")
@@ -136,7 +130,7 @@ private struct PeerSyncRow: View {
                 }
 
                 if let syncDate = sync.lastSyncDate {
-                    Text("Synced \(Self.formatter.localizedString(for: syncDate, relativeTo: Date()))")
+                    Text(SyncFormatting.relativeSyncTime(for: syncDate))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 } else {
@@ -159,12 +153,6 @@ private struct WatchSyncRow: View {
     @ObservedObject var watch: WatchConnectivitySender
     private let activeGreen = Color(red: 0.33, green: 0.72, blue: 0.44)
 
-    private static let formatter: RelativeDateTimeFormatter = {
-        let f = RelativeDateTimeFormatter()
-        f.unitsStyle = .abbreviated
-        return f
-    }()
-
     var body: some View {
         let connected = watch.isPaired && watch.isWatchAppInstalled
         HStack(spacing: 10) {
@@ -180,7 +168,7 @@ private struct WatchSyncRow: View {
                 }
 
                 if let syncDate = watch.lastSyncDate {
-                    Text("Synced \(Self.formatter.localizedString(for: syncDate, relativeTo: Date()))")
+                    Text(SyncFormatting.relativeSyncTime(for: syncDate))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 } else {
