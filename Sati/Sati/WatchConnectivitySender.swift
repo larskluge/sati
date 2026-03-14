@@ -61,15 +61,10 @@ final class WatchConnectivitySender: NSObject, ObservableObject, WCSessionDelega
             return
         }
 
-        var context: [String: Any] = [
-            "intervalMinutes": reminderManager.intervalMinutes,
-            "topicOffset": topicManager.offset,
-        ]
-
-        if let data = try? JSONEncoder().encode(topicManager.topics) {
-            context["topics"] = data
-        } else {
-            SatiLog.error("WCSender", "failed to encode topics")
+        let wc = WatchContext(topics: topicManager.topics, topicOffset: topicManager.offset, intervalMinutes: reminderManager.intervalMinutes)
+        guard let context = WatchContextCoder.encode(wc) else {
+            SatiLog.error("WCSender", "failed to encode context")
+            return
         }
 
         do {

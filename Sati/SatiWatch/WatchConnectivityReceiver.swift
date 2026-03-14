@@ -97,29 +97,13 @@ final class WatchConnectivityReceiver: NSObject, ObservableObject, WCSessionDele
         }
         SatiLog.info("WCRecv", "applyContext — keys: \(context.keys.sorted())")
 
-        var decodedTopics: [String]?
-        if let topicsData = context["topics"] as? Data {
-            decodedTopics = try? JSONDecoder().decode([String].self, from: topicsData)
-            SatiLog.info("WCRecv", "decoded topics from Data: \(decodedTopics ?? [])")
-        } else if let topicsArray = context["topics"] as? [String] {
-            decodedTopics = topicsArray
-            SatiLog.info("WCRecv", "received topics as array: \(topicsArray)")
-        } else {
-            SatiLog.error("WCRecv", "topics not Data or [String]: \(String(describing: type(of: context["topics"])))")
+        guard let wc = WatchContextCoder.decode(context) else {
+            SatiLog.error("WCRecv", "failed to decode context: \(context)")
+            return
         }
 
-        if let topics = decodedTopics, let offset = context["topicOffset"] as? Int {
-            SatiLog.info("WCRecv", "applying topics=\(topics) offset=\(offset)")
-            topicStore.update(topics: topics, offset: offset)
-        } else {
-            SatiLog.error("WCRecv", "failed to decode — topics=\(String(describing: context["topics"])) offset=\(String(describing: context["topicOffset"]))")
-        }
-
-        if let interval = context["intervalMinutes"] as? Int {
-            SatiLog.info("WCRecv", "applying interval=\(interval)")
-            reminderManager.intervalMinutes = interval
-        } else {
-            SatiLog.error("WCRecv", "failed to get interval: \(String(describing: context["intervalMinutes"]))")
-        }
+        SatiLog.info("WCRecv", "applying topics=\(wc.topics) offset=\(wc.topicOffset) interval=\(wc.intervalMinutes)")
+        topicStore.update(topics: wc.topics, offset: wc.topicOffset)
+        reminderManager.intervalMinutes = wc.intervalMinutes
     }
 }

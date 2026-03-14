@@ -83,57 +83,41 @@ final class PeerSyncManager: NSObject, ObservableObject {
         }
     }
 
-    private func makePayload() -> [String: Any] {
-        return [
-            "topics": topicManager.topics,
-            "topicOffset": topicManager.offset,
-            "intervalMinutes": reminderManager.intervalMinutes,
-            "updatedAt": updatedAt.timeIntervalSince1970,
-        ]
-    }
-
-    private func payloadHash(_ payload: [String: Any]) -> Int {
-        var hasher = Hasher()
-        hasher.combine(payload["topics"] as? [String] ?? [])
-        hasher.combine(payload["topicOffset"] as? Int ?? 0)
-        hasher.combine(payload["intervalMinutes"] as? Int ?? 5)
-        return hasher.finalize()
+    private func makePayload() -> SyncPayload {
+        SyncPayload(
+            topics: topicManager.topics,
+            topicOffset: topicManager.offset,
+            intervalMinutes: reminderManager.intervalMinutes,
+            updatedAt: updatedAt
+        )
     }
 
     private func broadcastState() {
         guard !session.connectedPeers.isEmpty else { return }
         let payload = makePayload()
-        let hash = payloadHash(payload)
-        lastSentHash = hash
-        guard let data = try? JSONSerialization.data(withJSONObject: payload) else { return }
+        lastSentHash = payload.contentHash()
+        guard let data = try? JSONSerialization.data(withJSONObject: payload.toDictionary()) else { return }
         try? session.send(data, toPeers: session.connectedPeers, with: .reliable)
         lastSyncDate = Date()
         SatiLog.info("PeerSync", "broadcast to \(session.connectedPeers.count) peers")
     }
 
     private func applyReceived(_ data: Data) {
-        guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+        guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let received = SyncPayload.fromDictionary(json) else {
             SatiLog.error("PeerSync", "failed to decode received data")
             return
         }
 
-        let receivedHash = payloadHash(json)
-        if receivedHash == lastSentHash { return }
+        if received.contentHash() == lastSentHash { return }
 
-        let receivedTimestamp = json["updatedAt"] as? Double ?? 0
-        let receivedDate = Date(timeIntervalSince1970: receivedTimestamp)
-        guard receivedDate > updatedAt else { return }
+        let local = makePayload()
+        guard received.shouldReplace(local) else { return }
 
-        if let topics = json["topics"] as? [String] {
-            topicManager.topics = topics
-        }
-        if let offset = json["topicOffset"] as? Int {
-            topicManager.setOffset(offset)
-        }
-        if let interval = json["intervalMinutes"] as? Int {
-            reminderManager.intervalMinutes = interval
-        }
-        updatedAt = receivedDate
+        topicManager.topics = received.topics
+        topicManager.setOffset(received.topicOffset)
+        reminderManager.intervalMinutes = received.intervalMinutes
+        updatedAt = received.updatedAt
         lastSyncDate = Date()
     }
 }
