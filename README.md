@@ -1,6 +1,6 @@
 # Sati
 
-A mindfulness reminder app for Apple platforms. Sends periodic notifications with rotating phrases and a singing bowl sound.
+A mindfulness reminder app for macOS, iOS, and watchOS. Periodic notifications with rotating mindfulness phrases and a singing bowl sound on macOS/iOS; haptic reminders on Apple Watch.
 
 ![macOS 15+](https://img.shields.io/badge/macOS-15%2B-blue) ![iOS 18+](https://img.shields.io/badge/iOS-18%2B-blue) ![watchOS 11+](https://img.shields.io/badge/watchOS-11%2B-blue)
 
@@ -61,6 +61,7 @@ Sati/Sati/
   ContentView.swift      # Topic management, interval, notifications toggle (iOS)
   TopicRotation.swift    # Half-day rotation formula (shared logic)
   SyncPayload.swift      # Peer sync payload, hashing, conflict resolution
+  SyncFormatting.swift   # Shared relative-time formatting for sync status
   WatchContextCoder.swift # Watch context encode/decode
   PeerSyncManager.swift  # MultipeerConnectivity sync (macOS + iOS)
   WatchConnectivitySender.swift  # iPhone→Watch sync (iOS-only)
@@ -84,6 +85,7 @@ Sati/SatiWatch/
   WatchDebugView.swift   # WCSession debug info
   TopicRotation.swift    # Shared rotation formula (copy)
   WatchContextCoder.swift # Shared context codec (copy)
+  SyncFormatting.swift   # Shared relative-time formatting (copy)
   SatiLog.swift          # Dual file+os.Logger logging
 
 Sati/SatiTests/          # Unit tests (macOS + iOS)
@@ -103,4 +105,4 @@ xcodebuild test -project Sati/Sati.xcodeproj -scheme Sati -destination 'platform
 xcodebuild test -project Sati/Sati.xcodeproj -scheme SatiWatch -destination 'platform=watchOS Simulator,name=Apple Watch Series 11 (46mm)' -only-testing:SatiWatchTests
 ```
 
-Tests cover the extracted sync logic: `TopicRotation`, `SyncPayload`, `WatchContextCoder`, `TopicManager`, and `WatchTopicStore`.
+Tests cover the extracted sync logic: `TopicRotation`, `SyncPayload`, `WatchContextCoder`, `TopicManager`, and `WatchTopicStore`. CI runs on GitHub Actions across all three platforms.

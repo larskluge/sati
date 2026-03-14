@@ -46,6 +46,8 @@ macOS-specific files are wrapped in `#if os(macOS)`. iOS-specific code uses `#if
 
 **`WatchConnectivitySender.swift`** — iOS-only (`#if os(iOS)`). Observes `TopicManager` (`$topics`, `$offset`) and `ReminderManager` (`$intervalMinutes`) via Combine, sends `updateApplicationContext` to paired Apple Watch using `WatchContextCoder`. Debounced 0.5s. Tracks `isPaired`, `isWatchAppInstalled`, `lastSyncDate`.
 
+**`SyncFormatting.swift`** — Shared utility enum for relative-time sync status strings (e.g. "Synced 15s ago"). Uses `RelativeDateTimeFormatter` with `.abbreviated` style. Copied to `SatiWatch/` for the watchOS target.
+
 **`SatiLog.swift`** — Cross-platform logging. Writes to both `os.Logger` and a 256KB ring-buffer file at `Documents/sati.log`. Use `SatiLog.info("Category", "message")`. Log files can be pulled from devices via `logs.sh`.
 
 ### watchOS Target (`Sati/SatiWatch/`)
