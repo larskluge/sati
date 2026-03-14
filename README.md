@@ -59,6 +59,9 @@ Sati/Sati/
   SettingsWindow.swift   # Standalone settings window (macOS-only)
   BuddhaIcon.swift       # Menu bar template image with snooze state (macOS-only)
   ContentView.swift      # Topic management, interval, notifications toggle (iOS)
+  TopicRotation.swift    # Half-day rotation formula (shared logic)
+  SyncPayload.swift      # Peer sync payload, hashing, conflict resolution
+  WatchContextCoder.swift # Watch context encode/decode
   PeerSyncManager.swift  # MultipeerConnectivity sync (macOS + iOS)
   WatchConnectivitySender.swift  # iPhone→Watch sync (iOS-only)
   SatiLog.swift          # Dual file+os.Logger logging
@@ -77,7 +80,27 @@ Sati/SatiWatch/
   WatchTopicStore.swift  # Local topic storage with half-day rotation
   WatchConnectivityReceiver.swift  # Receives state from iPhone
   WatchMainView.swift    # Main UI: status, topic, snooze
-  WatchSettingsView.swift  # Interval stepper, haptic picker
+  WatchSettingsView.swift  # Interval stepper, haptic picker, sync status
   WatchDebugView.swift   # WCSession debug info
+  TopicRotation.swift    # Shared rotation formula (copy)
+  WatchContextCoder.swift # Shared context codec (copy)
   SatiLog.swift          # Dual file+os.Logger logging
+
+Sati/SatiTests/          # Unit tests (macOS + iOS)
+Sati/SatiWatchTests/     # Unit tests (watchOS)
 ```
+
+## Testing
+
+```bash
+# macOS
+xcodebuild test -project Sati/Sati.xcodeproj -scheme Sati -destination 'platform=macOS' -only-testing:SatiTests
+
+# iOS (simulator)
+xcodebuild test -project Sati/Sati.xcodeproj -scheme Sati -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -only-testing:SatiTests
+
+# watchOS (simulator)
+xcodebuild test -project Sati/Sati.xcodeproj -scheme SatiWatch -destination 'platform=watchOS Simulator,name=Apple Watch Series 11 (46mm)' -only-testing:SatiWatchTests
+```
+
+Tests cover the extracted sync logic: `TopicRotation`, `SyncPayload`, `WatchContextCoder`, `TopicManager`, and `WatchTopicStore`.
