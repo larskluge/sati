@@ -12,6 +12,9 @@ final class ReminderManager: NSObject, ObservableObject, UNUserNotificationCente
     @Published var isActive: Bool {
         didSet {
             UserDefaults.standard.set(isActive, forKey: "isActive")
+            if isActive {
+                requestNotificationPermission()
+            }
         }
     }
     @Published var snoozeUntil: Date?
@@ -84,11 +87,9 @@ final class ReminderManager: NSObject, ObservableObject, UNUserNotificationCente
         )
         center.setNotificationCategories([category])
 
-        center.requestAuthorization(options: [.alert, .sound]) { granted, error in
-            if let error = error {
-                print("Notification permission error: \(error)")
-            }
-        }
+        #if os(macOS)
+        requestNotificationPermission()
+        #endif
 
         lastNotificationDate = Date()
         timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
@@ -98,6 +99,14 @@ final class ReminderManager: NSObject, ObservableObject, UNUserNotificationCente
 
     deinit {
         timer?.invalidate()
+    }
+
+    private func requestNotificationPermission() {
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { granted, error in
+            if let error = error {
+                print("Notification permission error: \(error)")
+            }
+        }
     }
 
     #if os(macOS)
