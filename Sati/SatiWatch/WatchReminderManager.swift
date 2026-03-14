@@ -21,6 +21,7 @@ final class WatchReminderManager: NSObject, ObservableObject, WKExtendedRuntimeS
 
     private var session: WKExtendedRuntimeSession?
     private var timer: Timer?
+    private var sessionFailCount = 0
 
     private let phrases: [String] = [
         "Come back to awareness",
@@ -53,6 +54,10 @@ final class WatchReminderManager: NSObject, ObservableObject, WKExtendedRuntimeS
     func startSession() {
         guard session == nil || session?.state == .invalid else {
             SatiLog.warning("WatchReminder", "startSession skipped — session state=\(session?.state.rawValue ?? -1)")
+            return
+        }
+        guard sessionFailCount < 3 else {
+            SatiLog.warning("WatchReminder", "startSession gave up after \(sessionFailCount) failures")
             return
         }
         let newSession = WKExtendedRuntimeSession()
@@ -164,6 +169,7 @@ final class WatchReminderManager: NSObject, ObservableObject, WKExtendedRuntimeS
         SatiLog.warning("WatchReminder", "session invalidated: reason=\(reason.rawValue) error=\(String(describing: error))")
         Task { @MainActor in
             self.session = nil
+            self.sessionFailCount += 1
             self.startSession()
         }
     }
@@ -172,6 +178,7 @@ final class WatchReminderManager: NSObject, ObservableObject, WKExtendedRuntimeS
         _ extendedRuntimeSession: WKExtendedRuntimeSession
     ) {
         SatiLog.info("WatchReminder", "session did start running")
+        Task { @MainActor in self.sessionFailCount = 0 }
     }
 
     nonisolated func extendedRuntimeSessionWillExpire(
