@@ -4,17 +4,21 @@ import Combine
 
 final class WatchConnectivityReceiver: NSObject, ObservableObject, WCSessionDelegate {
 
-    let reminderManager: WatchReminderManager
-    let topicStore: WatchTopicStore
+    private var reminderManager: WatchReminderManager?
+    private var topicStore: WatchTopicStore?
 
     @Published var isActivated = false
     @Published var lastReceivedDate: Date?
 
-    init(reminderManager: WatchReminderManager, topicStore: WatchTopicStore) {
+    override init() {
+        super.init()
+        SatiLog.info("WCRecv", "init")
+    }
+
+    func setManagers(reminderManager: WatchReminderManager, topicStore: WatchTopicStore) {
         self.reminderManager = reminderManager
         self.topicStore = topicStore
-        super.init()
-        SatiLog.info("WCRecv", "init with reminderManager and topicStore")
+        SatiLog.info("WCRecv", "managers wired")
     }
 
     func activate() {
@@ -87,6 +91,10 @@ final class WatchConnectivityReceiver: NSObject, ObservableObject, WCSessionDele
     }
 
     private func applyContext(_ context: [String: Any]) {
+        guard let reminderManager, let topicStore else {
+            SatiLog.error("WCRecv", "applyContext called before managers wired")
+            return
+        }
         SatiLog.info("WCRecv", "applyContext — keys: \(context.keys.sorted())")
 
         var decodedTopics: [String]?
