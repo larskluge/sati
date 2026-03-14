@@ -15,47 +15,34 @@ struct SyncFormattingTests {
         let now = Date()
         let past = now.addingTimeInterval(-1)
         let result = SyncFormatting.relativeSyncTime(for: past, relativeTo: now)
-        #expect(result == "Synced 1 second ago")
+        #expect(result == "Synced 1s ago")
     }
 
     @Test func fifteenSecondsAgo() {
         let now = Date()
         let past = now.addingTimeInterval(-15)
         let result = SyncFormatting.relativeSyncTime(for: past, relativeTo: now)
-        #expect(result == "Synced 15 seconds ago")
-    }
-
-    @Test func thirtySecondsAgo() {
-        let now = Date()
-        let past = now.addingTimeInterval(-30)
-        let result = SyncFormatting.relativeSyncTime(for: past, relativeTo: now)
-        #expect(result.hasPrefix("Synced "))
-        #expect(result.contains("30 seconds ago"))
+        #expect(result == "Synced 15s ago")
     }
 
     @Test func fiveMinutesAgo() {
         let now = Date()
         let past = now.addingTimeInterval(-5 * 60)
         let result = SyncFormatting.relativeSyncTime(for: past, relativeTo: now)
-        #expect(result.hasPrefix("Synced "))
-        #expect(result.contains("5 minutes ago"))
+        #expect(result == "Synced 5m ago")
     }
 
     @Test func oneHourAgo() {
         let now = Date()
         let past = now.addingTimeInterval(-60 * 60)
         let result = SyncFormatting.relativeSyncTime(for: past, relativeTo: now)
-        #expect(result.hasPrefix("Synced "))
-        #expect(result.contains("hour"))
-        #expect(result.contains("ago"))
+        #expect(result == "Synced 1h ago")
     }
 
-    @Test func usesFullStyle_notAbbreviated() {
+    @Test func usesAbbreviatedStyle() {
         let now = Date()
         let past = now.addingTimeInterval(-120)
         let result = SyncFormatting.relativeSyncTime(for: past, relativeTo: now)
-        // Full style says "minutes", abbreviated says "min"
-        #expect(result.contains("minutes"))
-        #expect(!result.contains("min ago"))
+        #expect(result == "Synced 2m ago")
     }
 }

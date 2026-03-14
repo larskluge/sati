@@ -3,7 +3,7 @@ import Foundation
 enum SyncFormatting {
     private static let formatter: RelativeDateTimeFormatter = {
         let f = RelativeDateTimeFormatter()
-        f.unitsStyle = .full
+        f.unitsStyle = .abbreviated
         return f
     }()
 
