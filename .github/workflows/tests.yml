@@ -1,0 +1,70 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test-macos:
+    name: macOS Tests
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run SatiTests on macOS
+        run: |
+          xcodebuild test \
+            -project Sati/Sati.xcodeproj \
+            -scheme Sati \
+            -destination 'platform=macOS' \
+            -only-testing:SatiTests \
+            -resultBundlePath TestResults/macos.xcresult
+
+  test-ios:
+    name: iOS Tests
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run SatiTests on iOS Simulator
+        run: |
+          DEVICE=$(xcrun simctl list devices available iOS -j | python3 -c "
+          import json, sys
+          data = json.load(sys.stdin)
+          for runtime, devices in data['devices'].items():
+              if 'iOS' in runtime:
+                  for d in devices:
+                      if 'iPhone' in d['name']:
+                          print(d['name']); sys.exit()
+          ")
+          echo "Using simulator: $DEVICE"
+          xcodebuild test \
+            -project Sati/Sati.xcodeproj \
+            -scheme Sati \
+            -destination "platform=iOS Simulator,name=$DEVICE" \
+            -only-testing:SatiTests \
+            -resultBundlePath TestResults/ios.xcresult
+
+  test-watchos:
+    name: watchOS Tests
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run SatiWatchTests on watchOS Simulator
+        run: |
+          DEVICE=$(xcrun simctl list devices available watchOS -j | python3 -c "
+          import json, sys
+          data = json.load(sys.stdin)
+          for runtime, devices in data['devices'].items():
+              if 'watchOS' in runtime:
+                  for d in devices:
+                      if 'Watch' in d['name']:
+                          print(d['name']); sys.exit()
+          ")
+          echo "Using simulator: $DEVICE"
+          xcodebuild test \
+            -project Sati/Sati.xcodeproj \
+            -scheme SatiWatch \
+            -destination "platform=watchOS Simulator,name=$DEVICE" \
+            -only-testing:SatiWatchTests \
+            -resultBundlePath TestResults/watchos.xcresult
