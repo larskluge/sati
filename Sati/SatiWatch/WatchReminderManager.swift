@@ -40,6 +40,7 @@ final class WatchReminderManager: NSObject, ObservableObject, WKExtendedRuntimeS
     override init() {
         self.intervalMinutes = UserDefaults.standard.object(forKey: "watchIntervalMinutes") as? Int ?? 5
         super.init()
+        startTimer()
         startSession()
     }
 
@@ -51,7 +52,6 @@ final class WatchReminderManager: NSObject, ObservableObject, WKExtendedRuntimeS
         newSession.delegate = self
         newSession.start()
         session = newSession
-        startTimer()
     }
 
     private func startTimer() {
