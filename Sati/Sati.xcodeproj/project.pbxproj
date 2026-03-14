@@ -7,11 +7,25 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0BD9C8A02F632AD50023A446 /* SatiWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 0BD9C8902F632AD40023A446 /* SatiWatch.app */; platformFilters = (ios, ); settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		0BD9C8A02F632AD50023A446 /* SatiWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 0BD9C8902F632AD40023A446 /* SatiWatch.app */; platformFilter = ios; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
 		0BD9C8A22F632AD50023A446 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0BD9C8712F632AD40023A446 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 0BD9C8952F632AD40023A446;
+			remoteInfo = SatiWatch;
+		};
+		0BD9C8B62F632AD50023A446 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0BD9C8712F632AD40023A446 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 0BD9C8782F632AD40023A446;
+			remoteInfo = Sati;
+		};
+		0BD9C8C62F632AD50023A446 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 0BD9C8712F632AD40023A446 /* Project object */;
 			proxyType = 1;
@@ -37,6 +51,8 @@
 /* Begin PBXFileReference section */
 		0BD9C8792F632AD40023A446 /* Sati.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Sati.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0BD9C8902F632AD40023A446 /* SatiWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SatiWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		0BD9C8B02F632AD50023A446 /* SatiTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SatiTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		0BD9C8C02F632AD50023A446 /* SatiWatchTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SatiWatchTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -48,6 +64,16 @@
 		0BD9C8912F632AD40023A446 /* SatiWatch */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = SatiWatch;
+			sourceTree = "<group>";
+		};
+		0BD9C8B12F632AD50023A446 /* SatiTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = SatiTests;
+			sourceTree = "<group>";
+		};
+		0BD9C8C12F632AD50023A446 /* SatiWatchTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = SatiWatchTests;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -67,6 +93,20 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		0BD9C8B22F632AD50023A446 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		0BD9C8C22F632AD50023A446 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -75,6 +115,8 @@
 			children = (
 				0BD9C87B2F632AD40023A446 /* Sati */,
 				0BD9C8912F632AD40023A446 /* SatiWatch */,
+				0BD9C8B12F632AD50023A446 /* SatiTests */,
+				0BD9C8C12F632AD50023A446 /* SatiWatchTests */,
 				0BD9C87A2F632AD40023A446 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -84,6 +126,8 @@
 			children = (
 				0BD9C8792F632AD40023A446 /* Sati.app */,
 				0BD9C8902F632AD40023A446 /* SatiWatch.app */,
+				0BD9C8B02F632AD50023A446 /* SatiTests.xctest */,
+				0BD9C8C02F632AD50023A446 /* SatiWatchTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -137,16 +181,49 @@
 			productReference = 0BD9C8902F632AD40023A446 /* SatiWatch.app */;
 			productType = "com.apple.product-type.application";
 		};
-/* End PBXNativeTarget section */
-
-/* Begin PBXTargetDependency section */
-		0BD9C8A32F632AD50023A446 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			platformFilters = (ios, );
-			target = 0BD9C8952F632AD40023A446 /* SatiWatch */;
-			targetProxy = 0BD9C8A22F632AD50023A446 /* PBXContainerItemProxy */;
+		0BD9C8B52F632AD50023A446 /* SatiTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0BD9C8BA2F632AD50023A446 /* Build configuration list for PBXNativeTarget "SatiTests" */;
+			buildPhases = (
+				0BD9C8B32F632AD50023A446 /* Sources */,
+				0BD9C8B22F632AD50023A446 /* Frameworks */,
+				0BD9C8B42F632AD50023A446 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				0BD9C8B72F632AD50023A446 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				0BD9C8B12F632AD50023A446 /* SatiTests */,
+			);
+			name = SatiTests;
+			productName = SatiTests;
+			productReference = 0BD9C8B02F632AD50023A446 /* SatiTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
 		};
-/* End PBXTargetDependency section */
+		0BD9C8C52F632AD50023A446 /* SatiWatchTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0BD9C8CA2F632AD50023A446 /* Build configuration list for PBXNativeTarget "SatiWatchTests" */;
+			buildPhases = (
+				0BD9C8C32F632AD50023A446 /* Sources */,
+				0BD9C8C22F632AD50023A446 /* Frameworks */,
+				0BD9C8C42F632AD50023A446 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				0BD9C8C72F632AD50023A446 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				0BD9C8C12F632AD50023A446 /* SatiWatchTests */,
+			);
+			name = SatiWatchTests;
+			productName = SatiWatchTests;
+			productReference = 0BD9C8C02F632AD50023A446 /* SatiWatchTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
 		0BD9C8712F632AD40023A446 /* Project object */ = {
@@ -161,6 +238,14 @@
 					};
 					0BD9C8952F632AD40023A446 = {
 						CreatedOnToolsVersion = 26.3;
+					};
+					0BD9C8B52F632AD50023A446 = {
+						CreatedOnToolsVersion = 26.3;
+						TestTargetID = 0BD9C8782F632AD40023A446;
+					};
+					0BD9C8C52F632AD50023A446 = {
+						CreatedOnToolsVersion = 26.3;
+						TestTargetID = 0BD9C8952F632AD40023A446;
 					};
 				};
 			};
@@ -180,6 +265,8 @@
 			targets = (
 				0BD9C8782F632AD40023A446 /* Sati */,
 				0BD9C8952F632AD40023A446 /* SatiWatch */,
+				0BD9C8B52F632AD50023A446 /* SatiTests */,
+				0BD9C8C52F632AD50023A446 /* SatiWatchTests */,
 			);
 		};
 /* End PBXProject section */
@@ -193,6 +280,20 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		0BD9C8942F632AD40023A446 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		0BD9C8B42F632AD50023A446 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		0BD9C8C42F632AD50023A446 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -216,7 +317,40 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		0BD9C8B32F632AD50023A446 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		0BD9C8C32F632AD50023A446 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		0BD9C8A32F632AD50023A446 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			platformFilter = ios;
+			target = 0BD9C8952F632AD40023A446 /* SatiWatch */;
+			targetProxy = 0BD9C8A22F632AD50023A446 /* PBXContainerItemProxy */;
+		};
+		0BD9C8B72F632AD50023A446 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 0BD9C8782F632AD40023A446 /* Sati */;
+			targetProxy = 0BD9C8B62F632AD50023A446 /* PBXContainerItemProxy */;
+		};
+		0BD9C8C72F632AD50023A446 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 0BD9C8952F632AD40023A446 /* SatiWatch */;
+			targetProxy = 0BD9C8C62F632AD50023A446 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		0BD9C8822F632AD50023A446 /* Debug */ = {
@@ -475,6 +609,102 @@
 			};
 			name = Release;
 		};
+		0BD9C8B82F632AD50023A446 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = GUGQ9MB76A;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.sati.SatiTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Sati.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Sati";
+			};
+			name = Debug;
+		};
+		0BD9C8B92F632AD50023A446 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = GUGQ9MB76A;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.sati.SatiTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Sati.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Sati";
+			};
+			name = Release;
+		};
+		0BD9C8C82F632AD50023A446 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = GUGQ9MB76A;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.sati.SatiWatchTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SatiWatch.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/SatiWatch";
+				WATCHOS_DEPLOYMENT_TARGET = 11.0;
+			};
+			name = Debug;
+		};
+		0BD9C8C92F632AD50023A446 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = GUGQ9MB76A;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.sati.SatiWatchTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SatiWatch.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/SatiWatch";
+				WATCHOS_DEPLOYMENT_TARGET = 11.0;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -501,6 +731,24 @@
 			buildConfigurations = (
 				0BD9C8962F632AD50023A446 /* Debug */,
 				0BD9C8972F632AD50023A446 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		0BD9C8BA2F632AD50023A446 /* Build configuration list for PBXNativeTarget "SatiTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0BD9C8B82F632AD50023A446 /* Debug */,
+				0BD9C8B92F632AD50023A446 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		0BD9C8CA2F632AD50023A446 /* Build configuration list for PBXNativeTarget "SatiWatchTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0BD9C8C82F632AD50023A446 /* Debug */,
+				0BD9C8C92F632AD50023A446 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
