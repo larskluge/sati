@@ -52,8 +52,8 @@ final class WatchConnectivitySender: NSObject, ObservableObject, WCSessionDelega
             return
         }
 
-        guard session.isPaired && session.isWatchAppInstalled else {
-            SatiLog.warning("WCSender", "skipping — watch not paired or app not installed")
+        guard session.isPaired else {
+            SatiLog.warning("WCSender", "skipping — watch not paired")
             return
         }
 
@@ -101,6 +101,15 @@ final class WatchConnectivitySender: NSObject, ObservableObject, WCSessionDelega
             Task { @MainActor in
                 self.sendContext()
                 replyHandler(["status": "synced"])
+            }
+        }
+    }
+
+    nonisolated func sessionWatchStateDidChange(_ session: WCSession) {
+        SatiLog.info("WCSender", "watchStateDidChange: isPaired=\(session.isPaired) isWatchAppInstalled=\(session.isWatchAppInstalled)")
+        if session.isPaired && session.isWatchAppInstalled {
+            Task { @MainActor in
+                self.sendContext()
             }
         }
     }

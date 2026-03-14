@@ -15,13 +15,15 @@ struct SatiWatchApp: App {
         _topicStore = StateObject(wrappedValue: ts)
         _connectivity = StateObject(wrappedValue: conn)
 
-        SatiLog.info("WatchApp", "init complete, activating connectivity")
-        conn.activate()
+        SatiLog.info("WatchApp", "init complete")
     }
 
     var body: some Scene {
         WindowGroup {
             WatchMainView(reminderManager: reminderManager, topicStore: topicStore)
+                .task {
+                    connectivity.activate()
+                }
         }
     }
 }

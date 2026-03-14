@@ -12,6 +12,7 @@ struct SatiLog {
 
     private static let logURL: URL = {
         let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+        try? FileManager.default.createDirectory(at: docs, withIntermediateDirectories: true)
         return docs.appendingPathComponent("sati.log")
     }()
 
