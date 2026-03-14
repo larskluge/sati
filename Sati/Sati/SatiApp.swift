@@ -25,17 +25,18 @@ final class AppState: ObservableObject {
     let settingsWindowController: SettingsWindowController
     #endif
     #if os(iOS)
-    var watchConnectivitySender: WatchConnectivitySender?
+    @Published var watchConnectivitySender: WatchConnectivitySender?
     private var didStart = false
     #endif
     #if os(macOS) || os(iOS)
-    var peerSyncManager: PeerSyncManager?
+    @Published var peerSyncManager: PeerSyncManager?
     #endif
 
     init() {
         #if os(macOS)
-        peerSyncManager = PeerSyncManager(topicManager: topicManager, reminderManager: reminderManager)
-        settingsWindowController = SettingsWindowController(topicManager: topicManager, reminderManager: reminderManager, peerSyncManager: peerSyncManager!)
+        let sync = PeerSyncManager(topicManager: topicManager, reminderManager: reminderManager)
+        peerSyncManager = sync
+        settingsWindowController = SettingsWindowController(topicManager: topicManager, reminderManager: reminderManager, peerSyncManager: sync)
         reminderManager.connectVLCMonitor(vlcMonitor)
         #endif
         reminderManager.topicManager = topicManager

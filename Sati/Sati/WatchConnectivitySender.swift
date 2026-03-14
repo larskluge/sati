@@ -5,6 +5,10 @@ import Combine
 
 final class WatchConnectivitySender: NSObject, ObservableObject, WCSessionDelegate {
 
+    @Published var isPaired: Bool = false
+    @Published var isWatchAppInstalled: Bool = false
+    @Published var lastSyncDate: Date?
+
     private let topicManager: TopicManager
     private let reminderManager: ReminderManager
     private var cancellables = Set<AnyCancellable>()
@@ -70,6 +74,7 @@ final class WatchConnectivitySender: NSObject, ObservableObject, WCSessionDelega
 
         do {
             try session.updateApplicationContext(context)
+            lastSyncDate = Date()
             SatiLog.info("WCSender", "sent context: interval=\(reminderManager.intervalMinutes) offset=\(topicManager.offset) topics=\(topicManager.topics)")
         } catch {
             SatiLog.error("WCSender", "updateApplicationContext failed: \(error)")
@@ -84,8 +89,10 @@ final class WatchConnectivitySender: NSObject, ObservableObject, WCSessionDelega
         error: (any Error)?
     ) {
         SatiLog.info("WCSender", "activationDidComplete: state=\(activationState.rawValue) error=\(String(describing: error))")
-        if activationState == .activated {
-            Task { @MainActor in
+        Task { @MainActor in
+            self.isPaired = session.isPaired
+            self.isWatchAppInstalled = session.isWatchAppInstalled
+            if activationState == .activated {
                 self.sendContext()
             }
         }
@@ -107,8 +114,10 @@ final class WatchConnectivitySender: NSObject, ObservableObject, WCSessionDelega
 
     nonisolated func sessionWatchStateDidChange(_ session: WCSession) {
         SatiLog.info("WCSender", "watchStateDidChange: isPaired=\(session.isPaired) isWatchAppInstalled=\(session.isWatchAppInstalled)")
-        if session.isPaired && session.isWatchAppInstalled {
-            Task { @MainActor in
+        Task { @MainActor in
+            self.isPaired = session.isPaired
+            self.isWatchAppInstalled = session.isWatchAppInstalled
+            if session.isPaired && session.isWatchAppInstalled {
                 self.sendContext()
             }
         }
