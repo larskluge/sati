@@ -3,6 +3,7 @@ import WatchKit
 
 struct WatchSettingsView: View {
     @ObservedObject var reminderManager: WatchReminderManager
+    @ObservedObject var connectivity: WatchConnectivityReceiver
 
     private let hapticOptions: [(String, WKHapticType)] = [
         ("Notification", .notification),
@@ -66,7 +67,36 @@ struct WatchSettingsView: View {
                     }
                 }
             }
+            Section("Sync") {
+                HStack(spacing: 8) {
+                    Image(systemName: "iphone")
+                        .foregroundColor(connectivity.isActivated ? green : .secondary)
+
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(connectivity.isActivated ? "iPhone connected" : "Not connected")
+                            .font(.footnote)
+
+                        if let syncDate = connectivity.lastReceivedDate {
+                            Text("Synced \(syncDate, style: .relative) ago")
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                        } else {
+                            Text("Not yet synced")
+                                .font(.caption2)
+                                .foregroundStyle(.tertiary)
+                        }
+                    }
+
+                    Spacer()
+
+                    Circle()
+                        .fill(connectivity.isActivated ? green : Color.secondary.opacity(0.3))
+                        .frame(width: 6, height: 6)
+                }
+            }
         }
         .navigationTitle("Settings")
     }
+
+    private let green = Color(red: 0.33, green: 0.72, blue: 0.44)
 }

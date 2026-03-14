@@ -20,7 +20,7 @@ struct SatiWatchApp: App {
 
     var body: some Scene {
         WindowGroup {
-            WatchMainView(reminderManager: reminderManager, topicStore: topicStore)
+            WatchMainView(reminderManager: reminderManager, topicStore: topicStore, connectivity: connectivity)
                 .task {
                     connectivity.activate()
                 }

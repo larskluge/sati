@@ -3,6 +3,7 @@ import SwiftUI
 struct WatchMainView: View {
     @ObservedObject var reminderManager: WatchReminderManager
     @ObservedObject var topicStore: WatchTopicStore
+    @ObservedObject var connectivity: WatchConnectivityReceiver
     @State private var showSettings = false
 
     private let gold = Color(red: 0.769, green: 0.639, blue: 0.353)
@@ -44,7 +45,7 @@ struct WatchMainView: View {
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     NavigationLink {
-                        WatchSettingsView(reminderManager: reminderManager)
+                        WatchSettingsView(reminderManager: reminderManager, connectivity: connectivity)
                     } label: {
                         Image(systemName: "gear")
                     }
