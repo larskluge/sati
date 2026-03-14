@@ -11,12 +11,6 @@ struct ContentView: View {
     private let accentGold = Color(red: 0.769, green: 0.639, blue: 0.353)
     private let activeGreen = Color(red: 0.33, green: 0.72, blue: 0.44)
 
-    private static let syncTimeFormatter: RelativeDateTimeFormatter = {
-        let f = RelativeDateTimeFormatter()
-        f.unitsStyle = .abbreviated
-        return f
-    }()
-
     var body: some View {
         NavigationStack {
             List {
@@ -41,37 +35,13 @@ struct ContentView: View {
                             in: 1...120)
                 }
 
-                if let sync = appState.peerSyncManager {
-                    Section("Sync") {
-                        HStack(spacing: 10) {
-                            Image(systemName: sync.peerConnected ? "antenna.radiowaves.left.and.right" : "antenna.radiowaves.left.and.right.slash")
-                                .foregroundColor(sync.peerConnected ? activeGreen : .secondary)
+                Section("Sync") {
+                    if let sync = appState.peerSyncManager {
+                        PeerSyncRow(sync: sync)
+                    }
 
-                            VStack(alignment: .leading, spacing: 2) {
-                                if sync.peerConnected, let name = sync.connectedPeerName {
-                                    Text(name)
-                                } else {
-                                    Text("No device connected")
-                                        .foregroundStyle(.secondary)
-                                }
-
-                                if let syncDate = sync.lastSyncDate {
-                                    Text("Synced \(Self.syncTimeFormatter.localizedString(for: syncDate, relativeTo: Date()))")
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
-                                } else {
-                                    Text("Not yet synced")
-                                        .font(.caption)
-                                        .foregroundStyle(.tertiary)
-                                }
-                            }
-
-                            Spacer()
-
-                            Circle()
-                                .fill(sync.peerConnected ? activeGreen : Color.secondary.opacity(0.3))
-                                .frame(width: 7, height: 7)
-                        }
+                    if let watch = appState.watchConnectivitySender {
+                        WatchSyncRow(watch: watch)
                     }
                 }
             }
@@ -138,6 +108,93 @@ struct ContentView: View {
                 }
                 .tint(accentGold)
             }
+        }
+    }
+}
+
+private struct PeerSyncRow: View {
+    @ObservedObject var sync: PeerSyncManager
+    private let activeGreen = Color(red: 0.33, green: 0.72, blue: 0.44)
+
+    private static let formatter: RelativeDateTimeFormatter = {
+        let f = RelativeDateTimeFormatter()
+        f.unitsStyle = .abbreviated
+        return f
+    }()
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "antenna.radiowaves.left.and.right")
+                .foregroundColor(sync.peerConnected ? activeGreen : .secondary)
+
+            VStack(alignment: .leading, spacing: 2) {
+                if sync.peerConnected, let name = sync.connectedPeerName {
+                    Text(name)
+                } else {
+                    Text("No device connected")
+                        .foregroundStyle(.secondary)
+                }
+
+                if let syncDate = sync.lastSyncDate {
+                    Text("Synced \(Self.formatter.localizedString(for: syncDate, relativeTo: Date()))")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                } else {
+                    Text("Not yet synced")
+                        .font(.caption)
+                        .foregroundStyle(.tertiary)
+                }
+            }
+
+            Spacer()
+
+            Circle()
+                .fill(sync.peerConnected ? activeGreen : Color.secondary.opacity(0.3))
+                .frame(width: 7, height: 7)
+        }
+    }
+}
+
+private struct WatchSyncRow: View {
+    @ObservedObject var watch: WatchConnectivitySender
+    private let activeGreen = Color(red: 0.33, green: 0.72, blue: 0.44)
+
+    private static let formatter: RelativeDateTimeFormatter = {
+        let f = RelativeDateTimeFormatter()
+        f.unitsStyle = .abbreviated
+        return f
+    }()
+
+    var body: some View {
+        let connected = watch.isPaired && watch.isWatchAppInstalled
+        HStack(spacing: 10) {
+            Image(systemName: "applewatch")
+                .foregroundColor(connected ? activeGreen : .secondary)
+
+            VStack(alignment: .leading, spacing: 2) {
+                if watch.isPaired {
+                    Text("Apple Watch")
+                } else {
+                    Text("No watch connected")
+                        .foregroundStyle(.secondary)
+                }
+
+                if let syncDate = watch.lastSyncDate {
+                    Text("Synced \(Self.formatter.localizedString(for: syncDate, relativeTo: Date()))")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                } else {
+                    Text("Not yet synced")
+                        .font(.caption)
+                        .foregroundStyle(.tertiary)
+                }
+            }
+
+            Spacer()
+
+            Circle()
+                .fill(connected ? activeGreen : Color.secondary.opacity(0.3))
+                .frame(width: 7, height: 7)
         }
     }
 }
