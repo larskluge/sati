@@ -6,6 +6,34 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		0BD9C8A02F632AD50023A446 /* SatiWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 0BD9C8902F632AD40023A446 /* SatiWatch.app */; platformFilters = (ios, ); settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		0BD9C8A22F632AD50023A446 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0BD9C8712F632AD40023A446 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 0BD9C8952F632AD40023A446;
+			remoteInfo = SatiWatch;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		0BD9C8A12F632AD50023A446 /* Embed Watch Content */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
+			dstSubfolderSpec = 16;
+			files = (
+				0BD9C8A02F632AD50023A446 /* SatiWatch.app in Embed Watch Content */,
+			);
+			name = "Embed Watch Content";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		0BD9C8792F632AD40023A446 /* Sati.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Sati.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0BD9C8902F632AD40023A446 /* SatiWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SatiWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -70,10 +98,12 @@
 				0BD9C8752F632AD40023A446 /* Sources */,
 				0BD9C8762F632AD40023A446 /* Frameworks */,
 				0BD9C8772F632AD40023A446 /* Resources */,
+				0BD9C8A12F632AD50023A446 /* Embed Watch Content */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				0BD9C8A32F632AD50023A446 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				0BD9C87B2F632AD40023A446 /* Sati */,
@@ -108,6 +138,15 @@
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
+
+/* Begin PBXTargetDependency section */
+		0BD9C8A32F632AD50023A446 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			platformFilters = (ios, );
+			target = 0BD9C8952F632AD40023A446 /* SatiWatch */;
+			targetProxy = 0BD9C8A22F632AD50023A446 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXProject section */
 		0BD9C8712F632AD40023A446 /* Project object */ = {
