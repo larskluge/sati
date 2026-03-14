@@ -563,9 +563,9 @@
 				DEVELOPMENT_TEAM = GUGQ9MB76A;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = SatiWatch-Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Sati;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
-				INFOPLIST_KEY_WKBackgroundModes = "mindfulness";
 				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.sati.Sati;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.sati.Sati.watchkitapp;
@@ -592,9 +592,9 @@
 				DEVELOPMENT_TEAM = GUGQ9MB76A;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = SatiWatch-Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Sati;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
-				INFOPLIST_KEY_WKBackgroundModes = "mindfulness";
 				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.sati.Sati;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.sati.Sati.watchkitapp;
