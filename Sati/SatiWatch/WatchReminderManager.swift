@@ -21,7 +21,7 @@ final class WatchReminderManager: NSObject, ObservableObject, WKExtendedRuntimeS
 
     private var session: WKExtendedRuntimeSession?
     private var timer: Timer?
-    private var sessionFailCount = 0
+    var sessionFailCount = 0
 
     private let phrases: [String] = [
         "Come back to awareness",
@@ -46,6 +46,20 @@ final class WatchReminderManager: NSObject, ObservableObject, WKExtendedRuntimeS
         super.init()
         SatiLog.info("WatchReminder", "init: interval=\(intervalMinutes)min isActive=\(isActive)")
         startTimer()
+        startSession()
+
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(appDidBecomeActive),
+            name: WKApplication.didBecomeActiveNotification,
+            object: nil
+        )
+    }
+
+    @objc private func appDidBecomeActive() {
+        guard sessionFailCount >= 3 else { return }
+        SatiLog.info("WatchReminder", "app became active — resetting sessionFailCount and retrying session")
+        sessionFailCount = 0
         startSession()
     }
 
