@@ -14,6 +14,8 @@ final class WatchReminderManager: NSObject, ObservableObject, WKExtendedRuntimeS
         didSet {
             UserDefaults.standard.set(intervalMinutes, forKey: "watchIntervalMinutes")
             SatiLog.info("WatchReminder", "intervalMinutes changed to \(intervalMinutes)")
+            lastReminderDate = Date()
+            scheduleNextTick()
         }
     }
 
@@ -63,7 +65,27 @@ final class WatchReminderManager: NSObject, ObservableObject, WKExtendedRuntimeS
     private func startTimer() {
         timer?.invalidate()
         lastReminderDate = Date()
-        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+        scheduleNextTick()
+    }
+
+    private func scheduleNextTick() {
+        timer?.invalidate()
+        guard isActive else { return }
+
+        let now = Date()
+        let nextFireDate: Date
+
+        if let until = snoozeUntil, until > now {
+            // Snoozed — wake when snooze ends
+            nextFireDate = until
+        } else {
+            // Active — wake when next reminder is due
+            let elapsed = now.timeIntervalSince(lastReminderDate)
+            let remaining = TimeInterval(intervalMinutes) * 60.0 - elapsed
+            nextFireDate = now.addingTimeInterval(max(remaining, 0.1))
+        }
+
+        timer = Timer.scheduledTimer(withTimeInterval: nextFireDate.timeIntervalSince(now), repeats: false) { [weak self] _ in
             self?.tick()
         }
     }
@@ -91,11 +113,13 @@ final class WatchReminderManager: NSObject, ObservableObject, WKExtendedRuntimeS
         } else {
             snoozeUntil = Date().addingTimeInterval(15 * 60)
         }
+        scheduleNextTick()
     }
 
     func resume() {
         snoozeUntil = nil
         lastReminderDate = Date()
+        scheduleNextTick()
     }
 
     // MARK: - Tick
@@ -110,19 +134,18 @@ final class WatchReminderManager: NSObject, ObservableObject, WKExtendedRuntimeS
         }
         guard isActive else { return }
 
-        if isSnoozed {
-            if let until = snoozeUntil, until <= Date() {
-                snoozeUntil = nil
+        if let until = snoozeUntil, until <= Date() {
+            snoozeUntil = nil
+            lastReminderDate = Date()
+        } else if !isSnoozed {
+            let elapsed = Date().timeIntervalSince(lastReminderDate)
+            if elapsed >= TimeInterval(intervalMinutes) * 60.0 {
+                fireReminder()
                 lastReminderDate = Date()
             }
-            return
         }
 
-        let elapsed = Date().timeIntervalSince(lastReminderDate)
-        if elapsed >= TimeInterval(intervalMinutes) * 60.0 {
-            fireReminder()
-            lastReminderDate = Date()
-        }
+        scheduleNextTick()
     }
 
     private func fireReminder() {

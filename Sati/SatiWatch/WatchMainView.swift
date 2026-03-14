@@ -55,22 +55,24 @@ struct WatchMainView: View {
     }
 
     private var statusRow: some View {
-        HStack(spacing: 6) {
-            Circle()
-                .fill(reminderManager.isSnoozed ? Color.gray : green)
-                .frame(width: 8, height: 8)
-            if let minutes = reminderManager.snoozeRemainingMinutes {
-                Text("Snoozed \(minutes)m")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-            } else if let topic = topicStore.activeTopic {
-                Text("\u{300C}\(topic)\u{300D}")
-                    .font(.footnote)
-                    .foregroundStyle(gold)
-            } else {
-                Text("Active")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
+        TimelineView(.periodic(from: .now, by: 60)) { _ in
+            HStack(spacing: 6) {
+                Circle()
+                    .fill(reminderManager.isSnoozed ? Color.gray : green)
+                    .frame(width: 8, height: 8)
+                if let minutes = reminderManager.snoozeRemainingMinutes {
+                    Text("Snoozed \(minutes)m")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                } else if let topic = topicStore.activeTopic {
+                    Text("\u{300C}\(topic)\u{300D}")
+                        .font(.footnote)
+                        .foregroundStyle(gold)
+                } else {
+                    Text("Active")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
             }
         }
     }
