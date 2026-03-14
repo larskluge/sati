@@ -20,9 +20,10 @@ jobs:
             -destination 'platform=macOS' \
             -only-testing:SatiTests \
             -resultBundlePath TestResults/macos.xcresult \
-            CODE_SIGN_IDENTITY="-" \
+            CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGNING_ALLOWED=NO
+            CODE_SIGNING_ALLOWED=NO \
+            DEVELOPMENT_TEAM=""
 
   test-ios:
     name: iOS Tests
@@ -47,9 +48,10 @@ jobs:
             -destination "platform=iOS Simulator,name=$DEVICE" \
             -only-testing:SatiTests \
             -resultBundlePath TestResults/ios.xcresult \
-            CODE_SIGN_IDENTITY="-" \
+            CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGNING_ALLOWED=NO
+            CODE_SIGNING_ALLOWED=NO \
+            DEVELOPMENT_TEAM=""
 
   test-watchos:
     name: watchOS Tests
@@ -74,6 +76,7 @@ jobs:
             -destination "platform=watchOS Simulator,name=$DEVICE" \
             -only-testing:SatiWatchTests \
             -resultBundlePath TestResults/watchos.xcresult \
-            CODE_SIGN_IDENTITY="-" \
+            CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGNING_ALLOWED=NO
+            CODE_SIGNING_ALLOWED=NO \
+            DEVELOPMENT_TEAM=""
