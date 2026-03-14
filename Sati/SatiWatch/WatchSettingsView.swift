@@ -77,7 +77,7 @@ struct WatchSettingsView: View {
                             .font(.footnote)
 
                         if let syncDate = connectivity.lastReceivedDate {
-                            Text("Synced \(syncDate, style: .relative) ago")
+                            Text("Synced \(Self.syncFormatter.localizedString(for: syncDate, relativeTo: Date()))")
                                 .font(.caption2)
                                 .foregroundStyle(.secondary)
                         } else {
@@ -99,4 +99,10 @@ struct WatchSettingsView: View {
     }
 
     private let green = Color(red: 0.33, green: 0.72, blue: 0.44)
+
+    private static let syncFormatter: RelativeDateTimeFormatter = {
+        let f = RelativeDateTimeFormatter()
+        f.unitsStyle = .abbreviated
+        return f
+    }()
 }
