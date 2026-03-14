@@ -44,6 +44,7 @@ final class WatchReminderManager: NSObject, ObservableObject, WKExtendedRuntimeS
         self.intervalMinutes = UserDefaults.standard.object(forKey: "watchIntervalMinutes") as? Int ?? 5
         super.init()
         SatiLog.info("WatchReminder", "init: interval=\(intervalMinutes)min isActive=\(isActive)")
+        startTimer()
         startSession()
     }
 
@@ -59,7 +60,6 @@ final class WatchReminderManager: NSObject, ObservableObject, WKExtendedRuntimeS
         newSession.start()
         session = newSession
         SatiLog.info("WatchReminder", "session started")
-        startTimer()
     }
 
     private func startTimer() {
