@@ -7,10 +7,6 @@ import AppKit
 #if os(macOS)
 class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
-        let iconPath = Bundle.main.bundlePath + "/Contents/Resources/AppIcon.icns"
-        if let icon = NSImage(contentsOfFile: iconPath) {
-            NSApplication.shared.applicationIconImage = icon
-        }
     }
 }
 #endif

@@ -7,8 +7,7 @@ struct BuddhaIcon {
         let s: CGFloat = 18.0
         let size = NSSize(width: s, height: s)
 
-        let resourcePath = Bundle.main.bundlePath + "/Contents/Resources/buddha@2x.png"
-        guard let baseImage = NSImage(contentsOfFile: resourcePath) else {
+        guard let baseImage = NSImage(named: "MenuBarIcon") else {
             let fallback = NSImage(size: size, flipped: false) { _ in
                 NSColor.black.setFill()
                 NSBezierPath(ovalIn: NSRect(x: 3, y: 3, width: 12, height: 12)).fill()
