@@ -5,7 +5,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Build & Run
 
 ```bash
-bash build.sh    # builds with xcodebuild, registers with LaunchServices
+make             # builds with xcodebuild, registers with LaunchServices
+make install     # builds and copies Sati.app to /Applications
 ```
 
 Xcode project at `Sati/Sati.xcodeproj`. Multi-platform (macOS + iOS + watchOS) with macOS as the primary target. Uses `PBXFileSystemSynchronizedRootGroup` — new files added to `Sati/Sati/` or `Sati/SatiWatch/` are automatically included in their respective targets.
@@ -20,7 +21,7 @@ Menu bar-only app on macOS (`LSUIElement=true`, no dock icon) using `MenuBarExtr
 
 macOS-specific files are wrapped in `#if os(macOS)`. iOS-specific code uses `#if os(iOS)`. The watchOS target (`SatiWatch/`) is a separate set of files — not shared code.
 
-**`SatiApp.swift`** — Cross-platform entry point. `AppDelegate` sets the app icon on macOS. `AppState` owns the core objects and wires them together. On iOS, `PeerSyncManager` and `WatchConnectivitySender` are deferred to after first frame via `startBackgroundServices()`. `MenuBarExtra` renders `SettingsView` as its popover and `BuddhaIcon` as its menu bar image on macOS; `ContentView` on iOS.
+**`SatiApp.swift`** — Cross-platform entry point. `AppState` owns the core objects and wires them together. On iOS, `PeerSyncManager` and `WatchConnectivitySender` are deferred to after first frame via `startBackgroundServices()`. `MenuBarExtra` renders `SettingsView` as its popover and `BuddhaIcon` as its menu bar image on macOS; `ContentView` on iOS.
 
 **`ReminderManager.swift`** — Core logic (platform-agnostic except `connectVLCMonitor`). `ObservableObject` that runs a 1-second timer, sends `UNUserNotificationCenter` notifications with rotating mindfulness phrases and a singing bowl sound when the interval elapses. Notifications are temporary — auto-removed from Notification Center after 8 seconds. Handles snooze (timed or VLC-based). Registers notification actions (15m, 30m, More...) and acts as `UNUserNotificationCenterDelegate`. `isActive` defaults to `true` on macOS, `false` on iOS. Settings persisted via `UserDefaults`.
 
@@ -38,7 +39,7 @@ macOS-specific files are wrapped in `#if os(macOS)`. iOS-specific code uses `#if
 
 **`SettingsWindow.swift`** — macOS-only (`#if os(macOS)`). Standalone settings window with topics management, notification sound toggle, launch-at-login toggle, and peer sync status.
 
-**`BuddhaIcon.swift`** — macOS-only (`#if os(macOS)`). Loads a PNG template image from the app bundle (`buddha@2x.png`) for the menu bar icon. Set as template image for automatic menu bar color adaptation. Snoozed state reduces opacity and adds "z" text. Falls back to a circle if image not found.
+**`BuddhaIcon.swift`** — macOS-only (`#if os(macOS)`). Loads `MenuBarIcon` from the asset catalog for the menu bar icon. Set as template image for automatic menu bar color adaptation. Snoozed state reduces opacity and adds "z" text. Falls back to a circle if image not found.
 
 **`ContentView.swift`** — iOS-only (`#if os(iOS)`). Takes `AppState`, `TopicManager`, and `ReminderManager` as `@ObservedObject`. Topic management (view, reorder, activate, add/remove), interval stepper, notifications toggle (off by default), and peer sync status. Triggers `appState.startBackgroundServices()` via `.task{}`.
 
@@ -89,13 +90,13 @@ Test targets use the same Swift concurrency settings as production (`SWIFT_DEFAU
 
 All resources live under `Sati/Sati/` and are auto-included via file system sync:
 
-- `Resources/buddha@2x.png` (44×44) and `buddha.png` (22×22) — Menu bar template icon (black with alpha channel)
-- `Resources/AppIcon.icns` — App icon shown in notifications (warm charcoal background with gold-tinted buddha)
+- `Assets.xcassets/AppIcon.appiconset` — App icon (1024×1024, used for all platforms)
+- `Assets.xcassets/MenuBarIcon.imageset` — Menu bar template icon (22×22 @1x, 44×44 @2x)
 - `Sounds/bowl.aif` — Singing bowl notification sound
 
 ## Icon Cache
 
-macOS aggressively caches app icons. `build.sh` runs `lsregister -f` to force icon updates. If the notification icon still shows stale, change `CFBundleIdentifier` temporarily, build, approve notifications, then change it back.
+macOS aggressively caches app icons. `make build` runs `lsregister -f` to force icon updates. If the notification icon still shows stale, change `CFBundleIdentifier` temporarily, build, approve notifications, then change it back.
 
 ## UI Conventions
 

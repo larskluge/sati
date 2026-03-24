@@ -21,19 +21,17 @@ A mindfulness reminder app for macOS, iOS, and watchOS. Periodic notifications w
 - watchOS companion app with haptic reminders (success pattern) and topic display
 - iPhone→Watch sync via WatchConnectivity (topics, active topic, interval)
 
-## Build
+## Build & Install
 
 Requires Xcode. macOS 15+ / iOS 18+ / watchOS 11+.
 
 ```bash
-bash build.sh
+make             # build and register with LaunchServices
+make install     # build and copy to /Applications
+make clean       # remove build artifacts
 ```
 
-This builds with `xcodebuild` and registers with LaunchServices. Or open `Sati/Sati.xcodeproj` in Xcode directly. For iOS and watchOS, build and run from Xcode to a connected device.
-
-## Install
-
-Build from Xcode or copy the built `Sati.app` to `/Applications`. Right-click → Open to bypass Gatekeeper on first launch.
+Or open `Sati/Sati.xcodeproj` in Xcode directly. For iOS and watchOS, build and run from Xcode to a connected device. Right-click → Open to bypass Gatekeeper on first launch.
 
 ## Usage
 
@@ -68,10 +66,9 @@ Sati/Sati/
   SatiLog.swift          # Dual file+os.Logger logging
   Info.plist             # Bonjour + local network permissions
   Sati.entitlements      # Sandbox + network entitlements (macOS)
-  Resources/
-    buddha@2x.png        # Menu bar icon (44x44 template)
-    buddha.png           # Menu bar icon (22x22 template)
-    AppIcon.icns         # Notification icon
+  Assets.xcassets/
+    AppIcon.appiconset/  # App icon (1024x1024, all platforms)
+    MenuBarIcon.imageset/ # Menu bar template icon (22x22 @1x, 44x44 @2x)
   Sounds/
     bowl.aif             # Singing bowl notification sound
 
