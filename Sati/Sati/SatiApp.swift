@@ -18,6 +18,7 @@ final class AppState: ObservableObject {
     #endif
     let topicManager = TopicManager()
     #if os(macOS)
+    let forcedBreakManager = ForcedBreakManager()
     let settingsWindowController: SettingsWindowController
     #endif
     #if os(iOS)
@@ -32,7 +33,7 @@ final class AppState: ObservableObject {
         #if os(macOS)
         let sync = PeerSyncManager(topicManager: topicManager, reminderManager: reminderManager)
         peerSyncManager = sync
-        settingsWindowController = SettingsWindowController(topicManager: topicManager, reminderManager: reminderManager, peerSyncManager: sync)
+        settingsWindowController = SettingsWindowController(topicManager: topicManager, reminderManager: reminderManager, peerSyncManager: sync, forcedBreakManager: forcedBreakManager)
         reminderManager.connectVLCMonitor(vlcMonitor)
         #endif
         reminderManager.topicManager = topicManager
@@ -65,6 +66,7 @@ struct SatiApp: App {
                 vlcMonitor: appState.vlcMonitor,
                 topicManager: appState.topicManager,
                 peerSyncManager: appState.peerSyncManager!,
+                forcedBreakManager: appState.forcedBreakManager,
                 onOpenSettings: { [weak appState] in appState?.settingsWindowController.open() }
             )
         } label: {

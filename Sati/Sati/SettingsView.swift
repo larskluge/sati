@@ -95,6 +95,7 @@ struct SettingsView: View {
     @ObservedObject var vlcMonitor: VLCMonitor
     @ObservedObject var topicManager: TopicManager
     @ObservedObject var peerSyncManager: PeerSyncManager
+    @ObservedObject var forcedBreakManager: ForcedBreakManager
     var onOpenSettings: () -> Void
     @State private var intervalText: String = ""
     @State private var gearHovered = false
@@ -165,6 +166,11 @@ struct SettingsView: View {
             // Extended snooze from notification "More..." action
             if reminderManager.showExtendedSnooze && reminderManager.isSnoozed {
                 snoozeRow(showAll: false)
+            }
+
+            // Forced break status
+            if forcedBreakManager.breakEnabled {
+                breakRow
             }
 
             separator
@@ -266,6 +272,58 @@ struct SettingsView: View {
             action()
             reminderManager.showExtendedSnooze = false
         }
+    }
+
+    private var breakCountdownText: String {
+        let secs = forcedBreakManager.workSecondsRemaining
+        if secs < 60 {
+            return "Break in \(secs)s"
+        } else {
+            return "Break in \(forcedBreakManager.workMinutesRemaining)m"
+        }
+    }
+
+    private var breakRow: some View {
+        HStack(spacing: 6) {
+            switch forcedBreakManager.phase {
+            case .work:
+                Text(breakCountdownText)
+                    .font(.system(size: 12, weight: .regular))
+                    .foregroundStyle(.secondary)
+                Spacer()
+            case .finishUp:
+                Text("Time to take a break")
+                    .font(.system(size: 12, weight: .regular))
+                    .foregroundStyle(.secondary)
+                Spacer()
+                SnoozeChip("Snooze", accentGold: accentGold, accentGoldDim: accentGoldDim) {
+                    forcedBreakManager.snooze()
+                }
+                SnoozeChip("Start Break", accentGold: accentGold, accentGoldDim: accentGoldDim) {
+                    NSApp.keyWindow?.close()
+                    forcedBreakManager.startBreak()
+                }
+            case .snoozed:
+                Text("Break snoozed")
+                    .font(.system(size: 12, weight: .regular))
+                    .foregroundStyle(.secondary)
+                Spacer()
+                SnoozeChip("Start Break", accentGold: accentGold, accentGoldDim: accentGoldDim) {
+                    NSApp.keyWindow?.close()
+                    forcedBreakManager.startBreak()
+                }
+            case .onBreak:
+                Text("On break")
+                    .font(.system(size: 12, weight: .regular))
+                    .foregroundStyle(.secondary)
+                Spacer()
+            case .disabled:
+                EmptyView()
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.bottom, 12)
+        .animation(.easeInOut(duration: 0.25), value: forcedBreakManager.phase == .finishUp)
     }
 
     private var separator: some View {

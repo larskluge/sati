@@ -9,11 +9,13 @@ final class SettingsWindowController {
     private let topicManager: TopicManager
     private let reminderManager: ReminderManager
     private let peerSyncManager: PeerSyncManager
+    private let forcedBreakManager: ForcedBreakManager
 
-    init(topicManager: TopicManager, reminderManager: ReminderManager, peerSyncManager: PeerSyncManager) {
+    init(topicManager: TopicManager, reminderManager: ReminderManager, peerSyncManager: PeerSyncManager, forcedBreakManager: ForcedBreakManager) {
         self.topicManager = topicManager
         self.reminderManager = reminderManager
         self.peerSyncManager = peerSyncManager
+        self.forcedBreakManager = forcedBreakManager
     }
 
     func open() {
@@ -26,7 +28,8 @@ final class SettingsWindowController {
         let contentView = SettingsContentView(
             topicManager: topicManager,
             reminderManager: reminderManager,
-            peerSyncManager: peerSyncManager
+            peerSyncManager: peerSyncManager,
+            forcedBreakManager: forcedBreakManager
         )
         let hosting = NSHostingController(rootView: contentView)
 
@@ -51,6 +54,7 @@ private struct SettingsContentView: View {
     @ObservedObject var topicManager: TopicManager
     @ObservedObject var reminderManager: ReminderManager
     @ObservedObject var peerSyncManager: PeerSyncManager
+    @ObservedObject var forcedBreakManager: ForcedBreakManager
     @State private var newTopic = ""
     @State private var launchAtLogin = SMAppService.mainApp.status == .enabled
     @State private var hoveredTopicIndex: Int? = nil
@@ -66,6 +70,7 @@ private struct SettingsContentView: View {
             Spacer().frame(height: 8)
 
             topicsSection
+            breakSection
             generalSection
             syncSection
         }
@@ -260,6 +265,158 @@ private struct SettingsContentView: View {
                 }
                 .buttonStyle(.plain)
             }
+        }
+    }
+
+    // MARK: - Break Section
+
+    @State private var workDurationText: String = ""
+    @State private var breakDurationText: String = ""
+
+    private var breakSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            sectionHeader("Forced Break")
+
+            GroupBox {
+                VStack(spacing: 0) {
+                    settingsToggleRow(
+                        icon: "cup.and.saucer",
+                        iconColor: accentGold,
+                        title: "Forced Break",
+                        subtitle: "Remind to take breaks",
+                        isOn: Binding(
+                            get: { forcedBreakManager.breakEnabled },
+                            set: { forcedBreakManager.setEnabled($0) }
+                        )
+                    )
+
+                    if forcedBreakManager.breakEnabled {
+                        Divider().padding(.leading, 40)
+
+                        HStack(spacing: 10) {
+                            ZStack {
+                                RoundedRectangle(cornerRadius: 6)
+                                    .fill(Color.blue.opacity(0.15))
+                                    .frame(width: 28, height: 28)
+                                Image(systemName: "deskclock")
+                                    .font(.system(size: 13))
+                                    .foregroundColor(.blue)
+                            }
+
+                            VStack(alignment: .leading, spacing: 1) {
+                                Text("Work Duration")
+                                    .font(.system(size: 13))
+                                Text("Time before break reminder")
+                                    .font(.system(size: 11))
+                                    .foregroundStyle(.secondary)
+                            }
+
+                            Spacer()
+
+                            HoverCircleButton(systemName: "minus") {
+                                let newVal = max(1, forcedBreakManager.workDurationMinutes - 5)
+                                forcedBreakManager.workDurationMinutes = newVal
+                                workDurationText = "\(newVal)"
+                            }
+
+                            TextField("", text: $workDurationText)
+                                .textFieldStyle(.plain)
+                                .font(.system(size: 15, weight: .light, design: .rounded))
+                                .foregroundStyle(.primary)
+                                .multilineTextAlignment(.center)
+                                .frame(width: 36)
+                                .onSubmit {
+                                    if let val = Int(workDurationText), val >= 1 {
+                                        forcedBreakManager.workDurationMinutes = val
+                                    } else {
+                                        workDurationText = "\(forcedBreakManager.workDurationMinutes)"
+                                    }
+                                }
+
+                            Text("min")
+                                .font(.system(size: 11, weight: .regular))
+                                .foregroundStyle(.secondary)
+
+                            HoverCircleButton(systemName: "plus") {
+                                let newVal = min(120, forcedBreakManager.workDurationMinutes + 5)
+                                forcedBreakManager.workDurationMinutes = newVal
+                                workDurationText = "\(newVal)"
+                            }
+                            .padding(.leading, 6)
+                        }
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+
+                        Divider().padding(.leading, 40)
+
+                        HStack(spacing: 10) {
+                            ZStack {
+                                RoundedRectangle(cornerRadius: 6)
+                                    .fill(Color.green.opacity(0.15))
+                                    .frame(width: 28, height: 28)
+                                Image(systemName: "leaf")
+                                    .font(.system(size: 13))
+                                    .foregroundColor(.green)
+                            }
+
+                            VStack(alignment: .leading, spacing: 1) {
+                                Text("Break Duration")
+                                    .font(.system(size: 13))
+                                Text("Length of break")
+                                    .font(.system(size: 11))
+                                    .foregroundStyle(.secondary)
+                            }
+
+                            Spacer()
+
+                            HoverCircleButton(systemName: "minus") {
+                                let newVal = max(1, forcedBreakManager.breakDurationMinutes - 1)
+                                forcedBreakManager.breakDurationMinutes = newVal
+                                breakDurationText = "\(newVal)"
+                            }
+
+                            TextField("", text: $breakDurationText)
+                                .textFieldStyle(.plain)
+                                .font(.system(size: 15, weight: .light, design: .rounded))
+                                .foregroundStyle(.primary)
+                                .multilineTextAlignment(.center)
+                                .frame(width: 36)
+                                .onSubmit {
+                                    if let val = Int(breakDurationText), val >= 1 {
+                                        forcedBreakManager.breakDurationMinutes = val
+                                    } else {
+                                        breakDurationText = "\(forcedBreakManager.breakDurationMinutes)"
+                                    }
+                                }
+
+                            Text("min")
+                                .font(.system(size: 11, weight: .regular))
+                                .foregroundStyle(.secondary)
+
+                            HoverCircleButton(systemName: "plus") {
+                                let newVal = min(30, forcedBreakManager.breakDurationMinutes + 1)
+                                forcedBreakManager.breakDurationMinutes = newVal
+                                breakDurationText = "\(newVal)"
+                            }
+                            .padding(.leading, 6)
+                        }
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                    }
+                }
+                .padding(.vertical, 2)
+            }
+            .groupBoxStyle(SettingsGroupBoxStyle())
+        }
+        .onAppear {
+            workDurationText = "\(forcedBreakManager.workDurationMinutes)"
+            breakDurationText = "\(forcedBreakManager.breakDurationMinutes)"
+        }
+        .onChange(of: forcedBreakManager.workDurationMinutes) { _, newValue in
+            workDurationText = "\(newValue)"
+        }
+        .onChange(of: forcedBreakManager.breakDurationMinutes) { _, newValue in
+            breakDurationText = "\(newValue)"
         }
     }
 
