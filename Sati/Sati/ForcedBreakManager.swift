@@ -1,5 +1,5 @@
 #if os(macOS)
-import Foundation
+import AppKit
 import Combine
 
 enum ForcedBreakPhase {
@@ -31,6 +31,10 @@ final class ForcedBreakManager: ObservableObject {
 
     private var timer: Timer?
     private var snoozeSecondsRemaining: Int = 0
+    private var screenLockedAt: Date?
+    private var phaseBeforeLock: ForcedBreakPhase?
+    private var paused: Bool = false
+    private var screenObservers: [NSObjectProtocol] = []
 
     private lazy var vignetteController = VignetteOverlayController()
     private lazy var breakController = BreakOverlayController()
@@ -50,10 +54,55 @@ final class ForcedBreakManager: ObservableObject {
         timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
             self?.tick()
         }
+
+        let wsnc = NSWorkspace.shared.notificationCenter
+        screenObservers.append(wsnc.addObserver(forName: NSWorkspace.screensDidSleepNotification, object: nil, queue: .main) { [weak self] _ in
+            self?.screenDidSleep()
+        })
+        screenObservers.append(wsnc.addObserver(forName: NSWorkspace.screensDidWakeNotification, object: nil, queue: .main) { [weak self] _ in
+            self?.screenDidWake()
+        })
     }
 
     deinit {
         timer?.invalidate()
+        let wsnc = NSWorkspace.shared.notificationCenter
+        for observer in screenObservers { wsnc.removeObserver(observer) }
+    }
+
+    // MARK: - Screen Lock
+
+    private func screenDidSleep() {
+        guard phase != .disabled else { return }
+        SatiLog.info("Break", "screen locked, pausing timer (phase: \(phase))")
+        screenLockedAt = Date()
+        phaseBeforeLock = phase
+        paused = true
+        if phase == .finishUp {
+            vignetteController.hide()
+        }
+    }
+
+    private func screenDidWake() {
+        guard paused, let lockedAt = screenLockedAt else { return }
+        let lockedSeconds = Int(Date().timeIntervalSince(lockedAt))
+        let breakThreshold = breakDurationMinutes * 60
+        paused = false
+        screenLockedAt = nil
+
+        if lockedSeconds >= breakThreshold {
+            SatiLog.info("Break", "screen unlocked after \(lockedSeconds)s (>= break duration), resetting work timer")
+            vignetteController.hide()
+            breakController.dismiss()
+            resetWorkTimer()
+        } else {
+            SatiLog.info("Break", "screen unlocked after \(lockedSeconds)s (< break duration), resuming")
+            if let prev = phaseBeforeLock, prev == .finishUp {
+                phase = .finishUp
+                vignetteController.fadeIn(duration: 0.5)
+            }
+        }
+        phaseBeforeLock = nil
     }
 
     // MARK: - Actions
@@ -95,6 +144,8 @@ final class ForcedBreakManager: ObservableObject {
     // MARK: - Timer
 
     private func tick() {
+        if paused { return }
+
         switch phase {
         case .disabled:
             return
