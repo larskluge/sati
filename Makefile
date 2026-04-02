@@ -4,7 +4,7 @@ APP_PATH := $(BUILD_DIR)/Build/Products/Release/$(APP_NAME).app
 INSTALL_DIR := /Applications
 LSREGISTER := /System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister
 
-.PHONY: build install uninstall clean
+.PHONY: build run install uninstall clean
 
 build:
 	@echo "Building $(APP_NAME)..."
@@ -20,11 +20,16 @@ build:
 	@$(LSREGISTER) -f "$(APP_PATH)"
 	@echo "Done!"
 
+run: build
+	-@killall $(APP_NAME) 2>/dev/null; sleep 0.5
+	@open "$(APP_PATH)"
+
 install: build
-	@echo "Installing to $(INSTALL_DIR)..."
+	-@killall $(APP_NAME) 2>/dev/null; sleep 0.5
 	@rm -rf "$(INSTALL_DIR)/$(APP_NAME).app"
 	@cp -R "$(APP_PATH)" "$(INSTALL_DIR)/$(APP_NAME).app"
 	@$(LSREGISTER) -f "$(INSTALL_DIR)/$(APP_NAME).app"
+	@open "$(INSTALL_DIR)/$(APP_NAME).app"
 	@echo "Installed."
 
 uninstall:

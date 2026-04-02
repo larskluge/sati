@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Workflow
+
+After every prompt that changed code, rebuild via `make install`.
+
 ## Build & Run
 
 ```bash
