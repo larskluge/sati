@@ -292,6 +292,10 @@ struct SettingsView: View {
                     .font(.system(size: 12, weight: .regular))
                     .foregroundStyle(.secondary)
                 Spacer()
+                SnoozeChip("Break Now", accentGold: accentGold, accentGoldDim: accentGoldDim) {
+                    NSApp.keyWindow?.close()
+                    forcedBreakManager.startBreak()
+                }
             case .finishUp:
                 Text("Time to take a break")
                     .font(.system(size: 12, weight: .regular))
@@ -329,7 +333,7 @@ struct SettingsView: View {
             }
         }
         .padding(.horizontal, 16)
-        .padding(.bottom, 12)
+        .padding(.vertical, 12)
         .animation(.easeInOut(duration: 0.25), value: forcedBreakManager.phase == .finishUp)
     }
 
