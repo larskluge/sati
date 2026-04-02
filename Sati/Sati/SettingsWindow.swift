@@ -39,10 +39,15 @@ final class SettingsWindowController {
         w.title = "Sati Settings"
         w.titlebarAppearsTransparent = true
         w.styleMask = [.titled, .closable, .fullSizeContentView]
-        w.center()
         w.isReleasedWhenClosed = false
         w.backgroundColor = .windowBackgroundColor
         w.makeKeyAndOrderFront(nil)
+        if let screen = w.screen ?? NSScreen.main {
+            let screenFrame = screen.visibleFrame
+            let x = screenFrame.midX - w.frame.width / 2
+            let y = screenFrame.maxY - w.frame.height - 40
+            w.setFrameOrigin(NSPoint(x: x, y: y))
+        }
         NSApp.activate(ignoringOtherApps: true)
         self.window = w
     }
