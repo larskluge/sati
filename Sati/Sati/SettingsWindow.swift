@@ -314,7 +314,8 @@ private struct SettingsContentView: View {
                             Spacer()
 
                             HoverCircleButton(systemName: "minus") {
-                                let newVal = max(1, forcedBreakManager.workDurationMinutes - 5)
+                                let current = forcedBreakManager.workDurationMinutes
+                                let newVal = max(1, current - (current % 5 == 0 ? 5 : current % 5))
                                 forcedBreakManager.workDurationMinutes = newVal
                                 workDurationText = "\(newVal)"
                             }
@@ -338,7 +339,9 @@ private struct SettingsContentView: View {
                                 .foregroundStyle(.secondary)
 
                             HoverCircleButton(systemName: "plus") {
-                                let newVal = min(120, forcedBreakManager.workDurationMinutes + 5)
+                                let current = forcedBreakManager.workDurationMinutes
+                                let remainder = current % 5
+                                let newVal = min(120, current + (remainder == 0 ? 5 : 5 - remainder))
                                 forcedBreakManager.workDurationMinutes = newVal
                                 workDurationText = "\(newVal)"
                             }
