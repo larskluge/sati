@@ -97,6 +97,7 @@ struct SettingsView: View {
     @ObservedObject var peerSyncManager: PeerSyncManager
     @ObservedObject var forcedBreakManager: ForcedBreakManager
     var onOpenSettings: () -> Void
+    @Environment(\.dismiss) private var dismiss
     @State private var intervalText: String = ""
     @State private var gearHovered = false
 
@@ -258,6 +259,7 @@ struct SettingsView: View {
                 SnoozeChip(vlcIcon: true, accentGold: accentGold, accentGoldDim: accentGoldDim) {
                     reminderManager.snoozeForVLC()
                     reminderManager.showExtendedSnooze = false
+                    dismiss()
                 }
             }
             if !showAll { Spacer() }
@@ -271,6 +273,7 @@ struct SettingsView: View {
         SnoozeChip(title, accentGold: accentGold, accentGoldDim: accentGoldDim) {
             action()
             reminderManager.showExtendedSnooze = false
+            dismiss()
         }
     }
 
@@ -296,6 +299,7 @@ struct SettingsView: View {
                 Spacer()
                 SnoozeChip("Snooze", accentGold: accentGold, accentGoldDim: accentGoldDim) {
                     forcedBreakManager.snooze()
+                    dismiss()
                 }
                 SnoozeChip("Start Break", accentGold: accentGold, accentGoldDim: accentGoldDim) {
                     NSApp.keyWindow?.close()
