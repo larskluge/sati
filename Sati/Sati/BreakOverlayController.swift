@@ -5,12 +5,13 @@ import Combine
 
 private class KeyableWindow: NSWindow {
     var onEscape: (() -> Void)?
+    var anyKeyDismisses = false
 
     override var canBecomeKey: Bool { true }
     override var canBecomeMain: Bool { true }
 
     override func keyDown(with event: NSEvent) {
-        if event.keyCode == 53 { // Escape
+        if anyKeyDismisses || event.keyCode == 53 {
             onEscape?()
         } else {
             super.keyDown(with: event)
@@ -114,6 +115,7 @@ final class BreakOverlayController {
         viewModel.breakOver = true
         viewModel.breakDurationMinutes = breakDurationMinutes
         viewModel.overtimeSeconds = 0
+        window?.anyKeyDismisses = true
     }
 
     func updateOvertime(_ seconds: Int) {
