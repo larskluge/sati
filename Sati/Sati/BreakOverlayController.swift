@@ -31,6 +31,8 @@ final class BreakOverlayController {
     func show(seconds: Int, onDismiss: @escaping () -> Void) {
         self.onDismiss = onDismiss
         viewModel.secondsRemaining = seconds
+        viewModel.breakOver = false
+        viewModel.overtimeSeconds = 0
 
         guard let screen = NSScreen.main else { return }
 
@@ -108,6 +110,16 @@ final class BreakOverlayController {
         viewModel.secondsRemaining = max(0, seconds)
     }
 
+    func showBreakOver(breakDurationMinutes: Int) {
+        viewModel.breakOver = true
+        viewModel.breakDurationMinutes = breakDurationMinutes
+        viewModel.overtimeSeconds = 0
+    }
+
+    func updateOvertime(_ seconds: Int) {
+        viewModel.overtimeSeconds = seconds
+    }
+
     func dismiss() {
         showCursor()
         cursorHideTimer?.invalidate()
@@ -134,10 +146,23 @@ final class BreakOverlayController {
 
 final class BreakViewModel: ObservableObject {
     @Published var secondsRemaining: Int = 0
+    @Published var breakOver: Bool = false
+    @Published var breakDurationMinutes: Int = 5
+    @Published var overtimeSeconds: Int = 0
 
     var timeString: String {
         let m = secondsRemaining / 60
         let s = secondsRemaining % 60
+        return String(format: "%d:%02d", m, s)
+    }
+
+    var breakDurationString: String {
+        "\(breakDurationMinutes) min completed"
+    }
+
+    var overtimeString: String {
+        let m = overtimeSeconds / 60
+        let s = overtimeSeconds % 60
         return String(format: "%d:%02d", m, s)
     }
 }
@@ -146,6 +171,7 @@ struct BreakCountdownView: View {
     @ObservedObject var viewModel: BreakViewModel
     var onEndBreak: () -> Void
     @State private var endBreakHovered = false
+    @State private var continueHovered = false
     @State private var cursorVisible = true
     @State private var hideTimer: Timer?
 
@@ -155,26 +181,61 @@ struct BreakCountdownView: View {
         ZStack {
             Color.black.opacity(0.85)
 
-            VStack(spacing: 32) {
-                Text(viewModel.timeString)
-                    .font(.system(size: 72, weight: .ultraLight, design: .rounded))
-                    .foregroundStyle(.primary.opacity(0.9))
-                    .monospacedDigit()
+            if viewModel.breakOver {
+                VStack(spacing: 16) {
+                    Text("Break over")
+                        .font(.system(size: 72, weight: .ultraLight, design: .rounded))
+                        .foregroundStyle(.primary.opacity(0.9))
 
-                Button(action: onEndBreak) {
-                    Text("End Break")
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundColor(accentGold.opacity(endBreakHovered ? 1.0 : 0.6))
-                        .padding(.horizontal, 20)
-                        .padding(.vertical, 8)
-                        .background(accentGold.opacity(endBreakHovered ? 0.15 : 0.05))
-                        .clipShape(Capsule())
-                        .animation(.easeInOut(duration: 0.15), value: endBreakHovered)
+                    HStack(spacing: 6) {
+                        Text(viewModel.breakDurationString)
+                            .font(.system(size: 24, weight: .light, design: .rounded))
+                            .foregroundStyle(.secondary)
+                        Text("+")
+                            .font(.system(size: 24, weight: .light, design: .rounded))
+                            .foregroundStyle(.secondary)
+                        Text(viewModel.overtimeString)
+                            .font(.system(size: 24, weight: .light, design: .rounded))
+                            .foregroundStyle(.secondary)
+                            .monospacedDigit()
+                    }
+
+                    Button(action: onEndBreak) {
+                        Text("Continue")
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundColor(accentGold.opacity(continueHovered ? 1.0 : 0.6))
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 8)
+                            .background(accentGold.opacity(continueHovered ? 0.15 : 0.05))
+                            .clipShape(Capsule())
+                            .animation(.easeInOut(duration: 0.15), value: continueHovered)
+                    }
+                    .buttonStyle(.plain)
+                    .onHover { continueHovered = $0 }
+                    .padding(.top, 16)
                 }
-                .buttonStyle(.plain)
-                .onHover { endBreakHovered = $0 }
-                .opacity(cursorVisible ? 1.0 : 0.0)
-                .animation(.easeInOut(duration: 0.5), value: cursorVisible)
+            } else {
+                VStack(spacing: 32) {
+                    Text(viewModel.timeString)
+                        .font(.system(size: 72, weight: .ultraLight, design: .rounded))
+                        .foregroundStyle(.primary.opacity(0.9))
+                        .monospacedDigit()
+
+                    Button(action: onEndBreak) {
+                        Text("End Break")
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundColor(accentGold.opacity(endBreakHovered ? 1.0 : 0.6))
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 8)
+                            .background(accentGold.opacity(endBreakHovered ? 0.15 : 0.05))
+                            .clipShape(Capsule())
+                            .animation(.easeInOut(duration: 0.15), value: endBreakHovered)
+                    }
+                    .buttonStyle(.plain)
+                    .onHover { endBreakHovered = $0 }
+                    .opacity(cursorVisible ? 1.0 : 0.0)
+                    .animation(.easeInOut(duration: 0.5), value: cursorVisible)
+                }
             }
         }
         .ignoresSafeArea()
@@ -183,7 +244,7 @@ struct BreakCountdownView: View {
             switch phase {
             case .active:
                 if !cursorVisible { cursorVisible = true }
-                if !endBreakHovered { scheduleHide() }
+                if !endBreakHovered && !continueHovered { scheduleHide() }
             case .ended:
                 break
             }

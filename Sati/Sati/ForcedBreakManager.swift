@@ -2,12 +2,13 @@
 import AppKit
 import Combine
 
-enum ForcedBreakPhase {
+enum ForcedBreakPhase: Equatable {
     case disabled
     case work
     case finishUp
     case snoozed
     case onBreak
+    case breakOver
 }
 
 final class ForcedBreakManager: ObservableObject {
@@ -15,6 +16,7 @@ final class ForcedBreakManager: ObservableObject {
     @Published var phase: ForcedBreakPhase = .work
     @Published var workSecondsRemaining: Int = 0
     @Published var breakSecondsRemaining: Int = 0
+    @Published var overtimeSeconds: Int = 0
 
     @Published var breakEnabled: Bool {
         didSet { UserDefaults.standard.set(breakEnabled, forKey: "breakEnabled") }
@@ -184,9 +186,15 @@ final class ForcedBreakManager: ObservableObject {
             breakSecondsRemaining -= 1
             breakController.updateTime(breakSecondsRemaining)
             if breakSecondsRemaining <= 0 {
-                SatiLog.info("Break", "break complete")
-                dismissBreak()
+                SatiLog.info("Break", "break complete, waiting for user to continue")
+                phase = .breakOver
+                overtimeSeconds = 0
+                breakController.showBreakOver(breakDurationMinutes: breakDurationMinutes)
             }
+
+        case .breakOver:
+            overtimeSeconds += 1
+            breakController.updateOvertime(overtimeSeconds)
         }
     }
 

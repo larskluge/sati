@@ -319,6 +319,11 @@ struct SettingsView: View {
                     .font(.system(size: 12, weight: .regular))
                     .foregroundStyle(.secondary)
                 Spacer()
+            case .breakOver:
+                Text("Break over")
+                    .font(.system(size: 12, weight: .regular))
+                    .foregroundStyle(.secondary)
+                Spacer()
             case .disabled:
                 EmptyView()
             }
