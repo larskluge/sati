@@ -276,11 +276,9 @@ struct SettingsView: View {
 
     private var breakCountdownText: String {
         let secs = forcedBreakManager.workSecondsRemaining
-        if secs < 60 {
-            return "Break in \(secs)s"
-        } else {
-            return "Break in \(forcedBreakManager.workMinutesRemaining)m"
-        }
+        let m = secs / 60
+        let s = secs % 60
+        return "Break in \(m):\(String(format: "%02d", s))"
     }
 
     private var breakRow: some View {
