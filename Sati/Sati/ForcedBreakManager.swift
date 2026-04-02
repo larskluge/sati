@@ -31,10 +31,11 @@ final class ForcedBreakManager: ObservableObject {
 
     private var timer: Timer?
     private var snoozeSecondsRemaining: Int = 0
-    private var screenLockedAt: Date?
+    var screenLockedAt: Date?
     private var phaseBeforeLock: ForcedBreakPhase?
-    private var paused: Bool = false
-    private var screenObservers: [NSObjectProtocol] = []
+    var paused: Bool = false
+    private var workspaceObservers: [NSObjectProtocol] = []
+    private var distributedObservers: [NSObjectProtocol] = []
 
     private lazy var vignetteController = VignetteOverlayController()
     private lazy var breakController = BreakOverlayController()
@@ -56,10 +57,18 @@ final class ForcedBreakManager: ObservableObject {
         }
 
         let wsnc = NSWorkspace.shared.notificationCenter
-        screenObservers.append(wsnc.addObserver(forName: NSWorkspace.screensDidSleepNotification, object: nil, queue: .main) { [weak self] _ in
+        workspaceObservers.append(wsnc.addObserver(forName: NSWorkspace.screensDidSleepNotification, object: nil, queue: .main) { [weak self] _ in
             self?.screenDidSleep()
         })
-        screenObservers.append(wsnc.addObserver(forName: NSWorkspace.screensDidWakeNotification, object: nil, queue: .main) { [weak self] _ in
+        workspaceObservers.append(wsnc.addObserver(forName: NSWorkspace.screensDidWakeNotification, object: nil, queue: .main) { [weak self] _ in
+            self?.screenDidWake()
+        })
+
+        let dnc = DistributedNotificationCenter.default()
+        distributedObservers.append(dnc.addObserver(forName: .init("com.apple.screenIsLocked"), object: nil, queue: .main) { [weak self] _ in
+            self?.screenDidSleep()
+        })
+        distributedObservers.append(dnc.addObserver(forName: .init("com.apple.screenIsUnlocked"), object: nil, queue: .main) { [weak self] _ in
             self?.screenDidWake()
         })
     }
@@ -67,13 +76,15 @@ final class ForcedBreakManager: ObservableObject {
     deinit {
         timer?.invalidate()
         let wsnc = NSWorkspace.shared.notificationCenter
-        for observer in screenObservers { wsnc.removeObserver(observer) }
+        for observer in workspaceObservers { wsnc.removeObserver(observer) }
+        let dnc = DistributedNotificationCenter.default()
+        for observer in distributedObservers { dnc.removeObserver(observer) }
     }
 
     // MARK: - Screen Lock
 
     private func screenDidSleep() {
-        guard phase != .disabled else { return }
+        guard phase != .disabled, !paused else { return }
         SatiLog.info("Break", "screen locked, pausing timer (phase: \(phase))")
         screenLockedAt = Date()
         phaseBeforeLock = phase
