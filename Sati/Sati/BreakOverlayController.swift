@@ -2,6 +2,8 @@
 import SwiftUI
 import AppKit
 import Combine
+import CoreAudio
+import AudioToolbox
 
 private class KeyableWindow: NSWindow {
     var onEscape: (() -> Void)?
@@ -29,11 +31,14 @@ final class BreakOverlayController {
     private var cursorHideTimer: Timer?
     private var cursorHidden = false
 
-    func show(seconds: Int, onDismiss: @escaping () -> Void) {
+    func show(seconds: Int, breakSoundEnabled: Bool, onDismiss: @escaping () -> Void) {
         self.onDismiss = onDismiss
         viewModel.secondsRemaining = seconds
         viewModel.breakOver = false
         viewModel.overtimeSeconds = 0
+        if breakSoundEnabled {
+            viewModel.startVolumeMonitoring()
+        }
 
         guard let screen = NSScreen.main else { return }
 
@@ -123,6 +128,7 @@ final class BreakOverlayController {
     }
 
     func dismiss() {
+        viewModel.stopVolumeMonitoring()
         showCursor()
         cursorHideTimer?.invalidate()
         cursorHideTimer = nil
@@ -151,6 +157,69 @@ final class BreakViewModel: ObservableObject {
     @Published var breakOver: Bool = false
     @Published var breakDurationMinutes: Int = 5
     @Published var overtimeSeconds: Int = 0
+    @Published var showVolume: Bool = false
+    @Published var systemVolume: Int = 0
+
+    private var volumeTimer: Timer?
+    private var listenerBlock: AudioObjectPropertyListenerBlock?
+
+    func startVolumeMonitoring() {
+        showVolume = true
+        systemVolume = Self.getSystemVolume()
+
+        var address = AudioObjectPropertyAddress(
+            mSelector: kAudioHardwareServiceDeviceProperty_VirtualMainVolume,
+            mScope: kAudioObjectPropertyScopeOutput,
+            mElement: kAudioObjectPropertyElementMain
+        )
+
+        let deviceID = Self.defaultOutputDevice()
+        let block: AudioObjectPropertyListenerBlock = { [weak self] _, _ in
+            DispatchQueue.main.async {
+                self?.systemVolume = Self.getSystemVolume()
+            }
+        }
+        listenerBlock = block
+        AudioObjectAddPropertyListenerBlock(deviceID, &address, DispatchQueue.main, block)
+    }
+
+    func stopVolumeMonitoring() {
+        showVolume = false
+        guard let block = listenerBlock else { return }
+        var address = AudioObjectPropertyAddress(
+            mSelector: kAudioHardwareServiceDeviceProperty_VirtualMainVolume,
+            mScope: kAudioObjectPropertyScopeOutput,
+            mElement: kAudioObjectPropertyElementMain
+        )
+        let deviceID = Self.defaultOutputDevice()
+        AudioObjectRemovePropertyListenerBlock(deviceID, &address, DispatchQueue.main, block)
+        listenerBlock = nil
+    }
+
+    static func defaultOutputDevice() -> AudioDeviceID {
+        var deviceID = AudioDeviceID(0)
+        var size = UInt32(MemoryLayout<AudioDeviceID>.size)
+        var address = AudioObjectPropertyAddress(
+            mSelector: kAudioHardwarePropertyDefaultOutputDevice,
+            mScope: kAudioObjectPropertyScopeGlobal,
+            mElement: kAudioObjectPropertyElementMain
+        )
+        AudioObjectGetPropertyData(AudioObjectID(kAudioObjectSystemObject), &address, 0, nil, &size, &deviceID)
+        return deviceID
+    }
+
+    static func getSystemVolume() -> Int {
+        let deviceID = defaultOutputDevice()
+        var volume: Float32 = 0
+        var size = UInt32(MemoryLayout<Float32>.size)
+        var address = AudioObjectPropertyAddress(
+            mSelector: kAudioHardwareServiceDeviceProperty_VirtualMainVolume,
+            mScope: kAudioObjectPropertyScopeOutput,
+            mElement: kAudioObjectPropertyElementMain
+        )
+        AudioObjectGetPropertyData(deviceID, &address, 0, nil, &size, &volume)
+        return Int(round(volume * 100))
+    }
 
     var timeString: String {
         let m = secondsRemaining / 60
@@ -223,6 +292,18 @@ struct BreakCountdownView: View {
                         .foregroundStyle(.primary.opacity(0.9))
                         .monospacedDigit()
 
+                    if viewModel.showVolume {
+                        HStack(spacing: 6) {
+                            Image(systemName: volumeIcon)
+                                .font(.system(size: 13))
+                                .foregroundStyle(.secondary)
+                            Text("\(viewModel.systemVolume)%")
+                                .font(.system(size: 13, weight: .light, design: .rounded))
+                                .foregroundStyle(.secondary)
+                                .monospacedDigit()
+                        }
+                    }
+
                     Button(action: onEndBreak) {
                         Text("End Break")
                             .font(.system(size: 13, weight: .medium))
@@ -251,6 +332,14 @@ struct BreakCountdownView: View {
                 break
             }
         }
+    }
+
+    private var volumeIcon: String {
+        let v = viewModel.systemVolume
+        if v == 0 { return "speaker.slash" }
+        if v < 33 { return "speaker.wave.1" }
+        if v < 66 { return "speaker.wave.2" }
+        return "speaker.wave.3"
     }
 
     private func scheduleHide() {

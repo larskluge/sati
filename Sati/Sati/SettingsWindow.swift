@@ -3,6 +3,7 @@ import SwiftUI
 import AppKit
 import ServiceManagement
 import UniformTypeIdentifiers
+import AVFoundation
 
 final class SettingsWindowController {
     private var window: NSWindow?
@@ -66,6 +67,7 @@ private struct SettingsContentView: View {
     @State private var isAddingTopic = false
     @State private var addFieldFocused = false
     @State private var draggingIndex: Int? = nil
+    @State private var soundPreviewPlayer: AVAudioPlayer?
 
     private let accentGold = Color(red: 0.769, green: 0.639, blue: 0.353)
     private let activeGreen = Color(red: 0.33, green: 0.72, blue: 0.44)
@@ -410,6 +412,16 @@ private struct SettingsContentView: View {
                         }
                         .padding(.horizontal, 12)
                         .padding(.vertical, 8)
+
+                        Divider().padding(.leading, 40)
+
+                        settingsToggleRow(
+                            icon: "speaker.wave.2",
+                            iconColor: .pink,
+                            title: "Break Sound",
+                            subtitle: "Play sound when break ends",
+                            isOn: $forcedBreakManager.breakSoundEnabled
+                        )
                     }
                 }
                 .padding(.vertical, 2)
@@ -443,6 +455,14 @@ private struct SettingsContentView: View {
                         subtitle: "Play singing bowl",
                         isOn: $reminderManager.soundEnabled
                     )
+                    .onChange(of: reminderManager.soundEnabled) { _, newValue in
+                        if newValue {
+                            if let url = Bundle.main.url(forResource: "tibetan-bowl", withExtension: "mp3") {
+                                soundPreviewPlayer = try? AVAudioPlayer(contentsOf: url)
+                                soundPreviewPlayer?.play()
+                            }
+                        }
+                    }
 
                     Divider().padding(.leading, 40)
 

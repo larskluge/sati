@@ -1,5 +1,6 @@
 #if os(macOS)
 import AppKit
+import AVFoundation
 import Combine
 
 enum ForcedBreakPhase: Equatable {
@@ -30,8 +31,12 @@ final class ForcedBreakManager: ObservableObject {
     @Published var breakDurationMinutes: Int {
         didSet { UserDefaults.standard.set(breakDurationMinutes, forKey: "breakDurationMinutes") }
     }
+    @Published var breakSoundEnabled: Bool {
+        didSet { UserDefaults.standard.set(breakSoundEnabled, forKey: "breakSoundEnabled") }
+    }
 
     private var timer: Timer?
+    private var breakSoundPlayer: AVAudioPlayer?
     private var snoozeSecondsRemaining: Int = 0
     var screenLockedAt: Date?
     private var phaseBeforeLock: ForcedBreakPhase?
@@ -46,6 +51,7 @@ final class ForcedBreakManager: ObservableObject {
         self.breakEnabled = UserDefaults.standard.object(forKey: "breakEnabled") as? Bool ?? true
         self.workDurationMinutes = UserDefaults.standard.object(forKey: "workDurationMinutes") as? Int ?? 40
         self.breakDurationMinutes = UserDefaults.standard.object(forKey: "breakDurationMinutes") as? Int ?? 5
+        self.breakSoundEnabled = UserDefaults.standard.object(forKey: "breakSoundEnabled") as? Bool ?? true
 
         if breakEnabled {
             phase = .work
@@ -125,7 +131,7 @@ final class ForcedBreakManager: ObservableObject {
         vignetteController.fadeOut(duration: 0.5)
         phase = .onBreak
         breakSecondsRemaining = breakDurationMinutes * 60
-        breakController.show(seconds: breakSecondsRemaining) { [weak self] in
+        breakController.show(seconds: breakSecondsRemaining, breakSoundEnabled: breakSoundEnabled) { [weak self] in
             self?.dismissBreak()
         }
     }
@@ -189,6 +195,7 @@ final class ForcedBreakManager: ObservableObject {
                 SatiLog.info("Break", "break complete, waiting for user to continue")
                 phase = .breakOver
                 overtimeSeconds = 0
+                playBreakSound()
                 breakController.showBreakOver(breakDurationMinutes: breakDurationMinutes)
             }
 
@@ -196,6 +203,16 @@ final class ForcedBreakManager: ObservableObject {
             overtimeSeconds += 1
             breakController.updateOvertime(overtimeSeconds)
         }
+    }
+
+    private func playBreakSound() {
+        guard breakSoundEnabled else { return }
+        guard let url = Bundle.main.url(forResource: "deep-bowl", withExtension: "mp3") else {
+            SatiLog.info("Break", "deep-bowl.mp3 not found")
+            return
+        }
+        breakSoundPlayer = try? AVAudioPlayer(contentsOf: url)
+        breakSoundPlayer?.play()
     }
 
     private func resetWorkTimer() {
