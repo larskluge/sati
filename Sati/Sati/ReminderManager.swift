@@ -186,7 +186,7 @@ final class ReminderManager: NSObject, ObservableObject, UNUserNotificationCente
             content.body = phrase
         }
         content.categoryIdentifier = Self.categoryID
-        content.sound = soundEnabled ? UNNotificationSound(named: UNNotificationSoundName("bowl.aif")) : nil
+        content.sound = soundEnabled ? UNNotificationSound(named: UNNotificationSoundName("tibetan-bowl.mp3")) : nil
 
         let id = UUID().uuidString
         let request = UNNotificationRequest(
