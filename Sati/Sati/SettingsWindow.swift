@@ -72,18 +72,39 @@ private struct SettingsContentView: View {
     private let accentGold = Color(red: 0.769, green: 0.639, blue: 0.353)
     private let activeGreen = Color(red: 0.33, green: 0.72, blue: 0.44)
 
-    var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            Spacer().frame(height: 8)
+    @State private var selectedTab = 0
 
-            topicsSection
-            breakSection
-            generalSection
-            syncSection
+    var body: some View {
+        VStack(spacing: 0) {
+            Picker("", selection: $selectedTab) {
+                Text("General").tag(0)
+                Text("Topics").tag(1)
+            }
+            .pickerStyle(.segmented)
+            .padding(.horizontal, 24)
+            .padding(.top, 12)
+
+            if selectedTab == 0 {
+                VStack(alignment: .leading, spacing: 20) {
+                    Spacer().frame(height: 8)
+                    remindersSection
+                    breakSection
+                    generalSection
+                    syncSection
+                }
+                .padding(.horizontal, 24)
+                .padding(.bottom, 24)
+                .frame(width: 460)
+            } else {
+                VStack(alignment: .leading, spacing: 20) {
+                    Spacer().frame(height: 8)
+                    topicsSection
+                }
+                .padding(.horizontal, 24)
+                .padding(.bottom, 24)
+                .frame(width: 460)
+            }
         }
-        .padding(.horizontal, 24)
-        .padding(.bottom, 24)
-        .frame(width: 460)
     }
 
     // MARK: - Topics Section
@@ -422,6 +443,14 @@ private struct SettingsContentView: View {
                             subtitle: "Play sound when break ends",
                             isOn: $forcedBreakManager.breakSoundEnabled
                         )
+                        .onChange(of: forcedBreakManager.breakSoundEnabled) { _, newValue in
+                            if newValue {
+                                if let url = Bundle.main.url(forResource: "deep-bowl", withExtension: "mp3") {
+                                    soundPreviewPlayer = try? AVAudioPlayer(contentsOf: url)
+                                    soundPreviewPlayer?.play()
+                                }
+                            }
+                        }
                     }
                 }
                 .padding(.vertical, 2)
@@ -440,14 +469,72 @@ private struct SettingsContentView: View {
         }
     }
 
-    // MARK: - General Section
+    // MARK: - Reminders Section
 
-    private var generalSection: some View {
+    @State private var intervalText: String = ""
+
+    private var remindersSection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            sectionHeader("General")
+            sectionHeader("Reminders")
 
             GroupBox {
                 VStack(spacing: 0) {
+                    HStack(spacing: 10) {
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 6)
+                                .fill(Color.blue.opacity(0.15))
+                                .frame(width: 28, height: 28)
+                            Image(systemName: "bell")
+                                .font(.system(size: 13))
+                                .foregroundColor(.blue)
+                        }
+
+                        VStack(alignment: .leading, spacing: 1) {
+                            Text("Interval")
+                                .font(.system(size: 13))
+                            Text("Time between reminders")
+                                .font(.system(size: 11))
+                                .foregroundStyle(.secondary)
+                        }
+
+                        Spacer()
+
+                        HoverCircleButton(systemName: "minus") {
+                            let newVal = max(1, reminderManager.intervalMinutes - 1)
+                            reminderManager.intervalMinutes = newVal
+                            intervalText = "\(newVal)"
+                        }
+
+                        TextField("", text: $intervalText)
+                            .textFieldStyle(.plain)
+                            .font(.system(size: 15, weight: .light, design: .rounded))
+                            .foregroundStyle(.primary)
+                            .multilineTextAlignment(.center)
+                            .frame(width: 36)
+                            .onSubmit {
+                                if let val = Int(intervalText), val >= 1 {
+                                    reminderManager.intervalMinutes = val
+                                } else {
+                                    intervalText = "\(reminderManager.intervalMinutes)"
+                                }
+                            }
+
+                        Text("min")
+                            .font(.system(size: 11, weight: .regular))
+                            .foregroundStyle(.secondary)
+
+                        HoverCircleButton(systemName: "plus") {
+                            let newVal = min(1440, reminderManager.intervalMinutes + 1)
+                            reminderManager.intervalMinutes = newVal
+                            intervalText = "\(newVal)"
+                        }
+                        .padding(.leading, 6)
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+
+                    Divider().padding(.leading, 40)
+
                     settingsToggleRow(
                         icon: "speaker.wave.2",
                         iconColor: .pink,
@@ -463,27 +550,43 @@ private struct SettingsContentView: View {
                             }
                         }
                     }
+                }
+                .padding(.vertical, 2)
+            }
+            .groupBoxStyle(SettingsGroupBoxStyle())
+        }
+        .onAppear {
+            intervalText = "\(reminderManager.intervalMinutes)"
+        }
+        .onChange(of: reminderManager.intervalMinutes) { _, newValue in
+            intervalText = "\(newValue)"
+        }
+    }
 
-                    Divider().padding(.leading, 40)
+    // MARK: - General Section
 
-                    settingsToggleRow(
-                        icon: "sunrise",
-                        iconColor: .orange,
-                        title: "Launch at Login",
-                        subtitle: "Start automatically",
-                        isOn: $launchAtLogin
-                    )
-                    .onChange(of: launchAtLogin) { oldValue, newValue in
-                        do {
-                            if newValue {
-                                try SMAppService.mainApp.register()
-                            } else {
-                                try SMAppService.mainApp.unregister()
-                            }
-                        } catch {
-                            print("Launch at login error: \(error)")
-                            launchAtLogin = SMAppService.mainApp.status == .enabled
+    private var generalSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            sectionHeader("General")
+
+            GroupBox {
+                settingsToggleRow(
+                    icon: "sunrise",
+                    iconColor: .orange,
+                    title: "Launch at Login",
+                    subtitle: "Start automatically",
+                    isOn: $launchAtLogin
+                )
+                .onChange(of: launchAtLogin) { oldValue, newValue in
+                    do {
+                        if newValue {
+                            try SMAppService.mainApp.register()
+                        } else {
+                            try SMAppService.mainApp.unregister()
                         }
+                    } catch {
+                        print("Launch at login error: \(error)")
+                        launchAtLogin = SMAppService.mainApp.status == .enabled
                     }
                 }
                 .padding(.vertical, 2)

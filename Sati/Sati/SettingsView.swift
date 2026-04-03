@@ -98,7 +98,6 @@ struct SettingsView: View {
     @ObservedObject var forcedBreakManager: ForcedBreakManager
     var onOpenSettings: () -> Void
     @Environment(\.dismiss) private var dismiss
-    @State private var intervalText: String = ""
     @State private var gearHovered = false
 
     private let accentGold = Color(red: 0.769, green: 0.639, blue: 0.353)
@@ -176,44 +175,6 @@ struct SettingsView: View {
 
             separator
 
-            // Interval
-            HStack(spacing: 0) {
-                Text("Every")
-                    .font(.system(size: 12, weight: .regular))
-                    .foregroundStyle(.secondary)
-
-                Spacer()
-
-                HoverCircleButton(systemName: "minus") {
-                    let newVal = max(1, reminderManager.intervalMinutes - 1)
-                    reminderManager.intervalMinutes = newVal
-                    intervalText = "\(newVal)"
-                }
-
-                TextField("", text: $intervalText)
-                    .textFieldStyle(.plain)
-                    .font(.system(size: 15, weight: .light, design: .rounded))
-                    .foregroundStyle(.primary)
-                    .multilineTextAlignment(.center)
-                    .frame(width: 36)
-                    .onSubmit { applyInterval() }
-
-                Text("min")
-                    .font(.system(size: 11, weight: .regular))
-                    .foregroundStyle(.secondary)
-
-                HoverCircleButton(systemName: "plus") {
-                    let newVal = min(1440, reminderManager.intervalMinutes + 1)
-                    reminderManager.intervalMinutes = newVal
-                    intervalText = "\(newVal)"
-                }
-                .padding(.leading, 6)
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
-
-            separator
-
             // Quit
             HoverButton(action: {
                 NSApplication.shared.terminate(nil)
@@ -230,12 +191,6 @@ struct SettingsView: View {
             }
         }
         .frame(width: 300)
-        .onAppear {
-            intervalText = "\(reminderManager.intervalMinutes)"
-        }
-        .onChange(of: reminderManager.intervalMinutes) { _, newValue in
-            intervalText = "\(newValue)"
-        }
     }
 
     private func snoozeRow(showAll: Bool) -> some View {
@@ -344,13 +299,6 @@ struct SettingsView: View {
             .padding(.horizontal, 12)
     }
 
-    private func applyInterval() {
-        if let val = Int(intervalText), val >= 1 {
-            reminderManager.intervalMinutes = val
-        } else {
-            intervalText = "\(reminderManager.intervalMinutes)"
-        }
-    }
 }
 
 // VLC traffic cone silhouette
