@@ -127,25 +127,35 @@ struct SettingsView: View {
                             .padding(.horizontal, 10)
                             .padding(.vertical, 5)
                     }
+                } else if showPauseOptions {
+                    HStack(spacing: 6) {
+                        chip("15m") { reminderManager.snooze(minutes: 15) }
+                        chip("30m") { reminderManager.snooze(minutes: 30) }
+                        chip("45m") { reminderManager.snooze(minutes: 45) }
+                        chip("1h") { reminderManager.snooze(minutes: 60) }
+                        if vlcMonitor.isVLCRunning {
+                            SnoozeChip(vlcIcon: true, accentGold: accentGold, accentGoldDim: accentGoldDim) {
+                                reminderManager.snoozeForVLC()
+                                reminderManager.showExtendedSnooze = false
+                                dismiss()
+                            }
+                        }
+                    }
+                    .transition(.opacity)
                 } else {
                     Button(action: {
                         withAnimation(.easeInOut(duration: 0.2)) {
-                            showPauseOptions.toggle()
+                            showPauseOptions = true
                         }
                     }) {
-                        HStack(spacing: 4) {
-                            Text("Pause")
-                                .font(.system(size: 11, weight: .medium))
-                                .foregroundStyle(.secondary)
-                            Image(systemName: "chevron.right")
-                                .font(.system(size: 8, weight: .medium))
-                                .foregroundStyle(.tertiary)
-                                .rotationEffect(.degrees(showPauseOptions ? 90 : 0))
-                        }
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
+                        Text("Pause")
+                            .font(.system(size: 11, weight: .medium))
+                            .foregroundStyle(.secondary)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
                     }
                     .buttonStyle(.plain)
+                    .transition(.opacity)
                 }
 
                 Spacer()
@@ -167,26 +177,6 @@ struct SettingsView: View {
             .padding(.horizontal, 20)
             .padding(.top, 16)
             .padding(.bottom, 8)
-
-            // Pause duration chips
-            if showPauseOptions && !reminderManager.isSnoozed {
-                HStack(spacing: 6) {
-                    chip("15m") { reminderManager.snooze(minutes: 15) }
-                    chip("30m") { reminderManager.snooze(minutes: 30) }
-                    chip("45m") { reminderManager.snooze(minutes: 45) }
-                    chip("1h") { reminderManager.snooze(minutes: 60) }
-                    if vlcMonitor.isVLCRunning {
-                        SnoozeChip(vlcIcon: true, accentGold: accentGold, accentGoldDim: accentGoldDim) {
-                            reminderManager.snoozeForVLC()
-                            reminderManager.showExtendedSnooze = false
-                            dismiss()
-                        }
-                    }
-                }
-                .padding(.horizontal, 20)
-                .padding(.bottom, 10)
-                .transition(.opacity.combined(with: .move(edge: .top)))
-            }
 
             // Extended snooze from notification "More..." action
             if reminderManager.showExtendedSnooze && reminderManager.isSnoozed {
@@ -210,6 +200,9 @@ struct SettingsView: View {
         }
         .padding(.bottom, 14)
         .frame(width: 320)
+        .onReceive(NotificationCenter.default.publisher(for: NSPopover.willShowNotification)) { _ in
+            showPauseOptions = false
+        }
     }
 
     // MARK: - Break Section
