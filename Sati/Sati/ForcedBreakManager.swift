@@ -207,8 +207,8 @@ final class ForcedBreakManager: ObservableObject {
 
     private func playBreakSound() {
         guard breakSoundEnabled else { return }
-        guard let url = Bundle.main.url(forResource: "deep-bowl", withExtension: "mp3") else {
-            SatiLog.info("Break", "deep-bowl.mp3 not found")
+        guard let url = Bundle.main.url(forResource: "deep-bowl", withExtension: "caf") else {
+            SatiLog.info("Break", "deep-bowl.caf not found")
             return
         }
         breakSoundPlayer = try? AVAudioPlayer(contentsOf: url)

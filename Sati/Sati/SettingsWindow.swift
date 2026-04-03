@@ -445,7 +445,7 @@ private struct SettingsContentView: View {
                         )
                         .onChange(of: forcedBreakManager.breakSoundEnabled) { _, newValue in
                             if newValue {
-                                if let url = Bundle.main.url(forResource: "deep-bowl", withExtension: "mp3") {
+                                if let url = Bundle.main.url(forResource: "deep-bowl", withExtension: "caf") {
                                     soundPreviewPlayer = try? AVAudioPlayer(contentsOf: url)
                                     soundPreviewPlayer?.play()
                                 }
@@ -544,7 +544,7 @@ private struct SettingsContentView: View {
                     )
                     .onChange(of: reminderManager.soundEnabled) { _, newValue in
                         if newValue {
-                            if let url = Bundle.main.url(forResource: "tibetan-bowl", withExtension: "mp3") {
+                            if let url = Bundle.main.url(forResource: "tibetan-bowl", withExtension: "caf") {
                                 soundPreviewPlayer = try? AVAudioPlayer(contentsOf: url)
                                 soundPreviewPlayer?.play()
                             }

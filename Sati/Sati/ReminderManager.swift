@@ -1,6 +1,7 @@
 import Foundation
 import UserNotifications
 import Combine
+import AVFoundation
 
 final class ReminderManager: NSObject, ObservableObject, UNUserNotificationCenterDelegate {
 
@@ -39,6 +40,7 @@ final class ReminderManager: NSObject, ObservableObject, UNUserNotificationCente
     private var timer: Timer?
     private var lastNotificationDate: Date = Date()
     private var cancellables = Set<AnyCancellable>()
+    private var notificationSoundPlayer: AVAudioPlayer?
 
     private let phrases: [String] = [
         "Come back to awareness",
@@ -131,12 +133,12 @@ final class ReminderManager: NSObject, ObservableObject, UNUserNotificationCente
 
     var statusText: String {
         if snoozedForVLC {
-            return "Snoozed while VLC plays"
+            return "Paused while VLC plays"
         }
         if let until = snoozeUntil, until > Date() {
             let formatter = DateFormatter()
             formatter.dateFormat = "h:mm a"
-            return "Snoozed until \(formatter.string(from: until))"
+            return "Paused until \(formatter.string(from: until))"
         }
         return "Active"
     }
@@ -186,7 +188,13 @@ final class ReminderManager: NSObject, ObservableObject, UNUserNotificationCente
             content.body = phrase
         }
         content.categoryIdentifier = Self.categoryID
-        content.sound = soundEnabled ? UNNotificationSound(named: UNNotificationSoundName("tibetan-bowl.mp3")) : nil
+        content.sound = nil
+        if soundEnabled {
+            if let url = Bundle.main.url(forResource: "tibetan-bowl", withExtension: "caf") {
+                notificationSoundPlayer = try? AVAudioPlayer(contentsOf: url)
+                notificationSoundPlayer?.play()
+            }
+        }
 
         let id = UUID().uuidString
         let request = UNNotificationRequest(
