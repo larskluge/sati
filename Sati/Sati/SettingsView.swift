@@ -99,6 +99,7 @@ struct SettingsView: View {
     var onOpenSettings: () -> Void
     @Environment(\.dismiss) private var dismiss
     @State private var gearHovered = false
+    @State private var showPauseOptions = false
 
     private let accentGold = Color(red: 0.769, green: 0.639, blue: 0.353)
     private let accentGoldDim = Color(red: 0.769, green: 0.639, blue: 0.353).opacity(0.15)
@@ -106,41 +107,50 @@ struct SettingsView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // Status
+            // Status + actions row
             HStack(spacing: 10) {
                 Circle()
                     .fill(reminderManager.isSnoozed ? Color.secondary.opacity(0.5) : activeGreen)
                     .frame(width: 7, height: 7)
 
-                Text(reminderManager.statusText)
-                    .font(.system(size: 12, weight: .regular))
-                    .foregroundStyle(reminderManager.isSnoozed ? .secondary : .primary)
-
-                if !reminderManager.isSnoozed, let topic = topicManager.activeTopic {
-                    Text("「\(topic)」")
-                        .font(.system(size: 11, weight: .medium))
-                        .foregroundColor(accentGold)
-                }
-
-                Spacer()
-
                 if reminderManager.isSnoozed {
+                    Text(reminderManager.statusText)
+                        .font(.system(size: 12, weight: .regular))
+                        .foregroundStyle(.secondary)
+
+                    Spacer()
+
                     HoverButton(action: { reminderManager.resume() }) {
                         Text("Resume")
                             .font(.system(size: 11, weight: .medium))
                             .foregroundColor(accentGold)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 5)
                     }
+                } else {
+                    Button(action: {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            showPauseOptions.toggle()
+                        }
+                    }) {
+                        HStack(spacing: 4) {
+                            Text("Pause")
+                                .font(.system(size: 11, weight: .medium))
+                                .foregroundStyle(.secondary)
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 8, weight: .medium))
+                                .foregroundStyle(.tertiary)
+                                .rotationEffect(.degrees(showPauseOptions ? 90 : 0))
+                        }
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                    }
+                    .buttonStyle(.plain)
                 }
 
-                Circle()
-                    .fill(peerSyncManager.peerConnected ? activeGreen : Color.secondary.opacity(0.3))
-                    .frame(width: 6, height: 6)
-                    .help(peerSyncManager.peerConnected ? "Peer connected" : "No peer connected")
+                Spacer()
 
                 Button(action: {
-                    NSApp.keyWindow?.close()
                     onOpenSettings()
                 }) {
                     Image(systemName: "gearshape")
@@ -154,61 +164,172 @@ struct SettingsView: View {
                 .buttonStyle(.plain)
                 .onHover { gearHovered = $0 }
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
-            .animation(.easeInOut(duration: 0.25), value: reminderManager.isSnoozed)
+            .padding(.horizontal, 20)
+            .padding(.top, 16)
+            .padding(.bottom, 8)
 
-            // Snooze row (when active)
-            if !reminderManager.isSnoozed {
-                snoozeRow(showAll: true)
+            // Pause duration chips
+            if showPauseOptions && !reminderManager.isSnoozed {
+                HStack(spacing: 6) {
+                    chip("15m") { reminderManager.snooze(minutes: 15) }
+                    chip("30m") { reminderManager.snooze(minutes: 30) }
+                    chip("45m") { reminderManager.snooze(minutes: 45) }
+                    chip("1h") { reminderManager.snooze(minutes: 60) }
+                    if vlcMonitor.isVLCRunning {
+                        SnoozeChip(vlcIcon: true, accentGold: accentGold, accentGoldDim: accentGoldDim) {
+                            reminderManager.snoozeForVLC()
+                            reminderManager.showExtendedSnooze = false
+                            dismiss()
+                        }
+                    }
+                }
+                .padding(.horizontal, 20)
+                .padding(.bottom, 10)
+                .transition(.opacity.combined(with: .move(edge: .top)))
             }
 
             // Extended snooze from notification "More..." action
             if reminderManager.showExtendedSnooze && reminderManager.isSnoozed {
-                snoozeRow(showAll: false)
+                extendedSnoozeRow
             }
 
-            // Forced break status
+            // Topic
+            if let topic = topicManager.activeTopic {
+                Text("「\(topic)」")
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundColor(accentGold)
+                    .frame(maxWidth: .infinity)
+                    .padding(.top, 18)
+                    .padding(.bottom, 36)
+            }
+
+            // Break progress
             if forcedBreakManager.breakEnabled {
-                breakRow
+                breakSection
             }
+        }
+        .padding(.bottom, 14)
+        .frame(width: 320)
+    }
 
-            separator
+    // MARK: - Break Section
 
-            // Quit
-            HoverButton(action: {
-                NSApplication.shared.terminate(nil)
-            }) {
+    private var breakProgress: Double {
+        let total = Double(forcedBreakManager.workDurationMinutes * 60)
+        guard total > 0 else { return 0 }
+        let elapsed = total - Double(forcedBreakManager.workSecondsRemaining)
+        return min(1, max(0, elapsed / total))
+    }
+
+    private var breakCountdownText: String {
+        let secs = forcedBreakManager.workSecondsRemaining
+        let m = secs / 60
+        let s = secs % 60
+        return "\(m):\(String(format: "%02d", s))"
+    }
+
+    private var breakSection: some View {
+        VStack(spacing: 0) {
+            switch forcedBreakManager.phase {
+            case .work:
+                VStack(spacing: 14) {
+                    GeometryReader { geo in
+                        ZStack(alignment: .leading) {
+                            RoundedRectangle(cornerRadius: 3)
+                                .fill(.primary.opacity(0.06))
+                                .frame(height: 6)
+                            RoundedRectangle(cornerRadius: 3)
+                                .fill(accentGold.opacity(0.5))
+                                .frame(width: geo.size.width * breakProgress, height: 6)
+                        }
+                    }
+                    .frame(height: 6)
+
+                    HStack {
+                        Text("Break in \(breakCountdownText)")
+                            .font(.system(size: 12, weight: .regular))
+                            .foregroundStyle(.secondary)
+                            .monospacedDigit()
+                        Spacer()
+                        SnoozeChip("Break Now", accentGold: accentGold, accentGoldDim: accentGoldDim) {
+                            NSApp.keyWindow?.close()
+                            forcedBreakManager.startBreak()
+                        }
+                    }
+                }
+                .padding(.horizontal, 20)
+                .padding(.bottom, 14)
+
+            case .finishUp:
+                VStack(spacing: 10) {
+                    GeometryReader { geo in
+                        RoundedRectangle(cornerRadius: 3)
+                            .fill(accentGold.opacity(0.5))
+                            .frame(height: 6)
+                    }
+                    .frame(height: 6)
+
+                    HStack {
+                        Text("Time for a break")
+                            .font(.system(size: 12, weight: .regular))
+                            .foregroundStyle(.secondary)
+                        Spacer()
+                        SnoozeChip("+2 min", accentGold: accentGold, accentGoldDim: accentGoldDim) {
+                            forcedBreakManager.snooze()
+                            dismiss()
+                        }
+                        SnoozeChip("Start Break", accentGold: accentGold, accentGoldDim: accentGoldDim) {
+                            NSApp.keyWindow?.close()
+                            forcedBreakManager.startBreak()
+                        }
+                    }
+                }
+                .padding(.horizontal, 20)
+                .padding(.bottom, 14)
+
+            case .snoozed:
                 HStack {
-                    Text("Quit")
+                    Text("Break snoozed")
+                        .font(.system(size: 12, weight: .regular))
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                    SnoozeChip("Start Break", accentGold: accentGold, accentGoldDim: accentGoldDim) {
+                        NSApp.keyWindow?.close()
+                        forcedBreakManager.startBreak()
+                    }
+                }
+                .padding(.horizontal, 20)
+                .padding(.bottom, 14)
+
+            case .onBreak:
+                HStack {
+                    Text("On break")
                         .font(.system(size: 12, weight: .regular))
                         .foregroundStyle(.secondary)
                     Spacer()
                 }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 10)
-                .contentShape(Rectangle())
+                .padding(.horizontal, 20)
+                .padding(.bottom, 14)
+
+            case .breakOver:
+                HStack {
+                    Text("Break over")
+                        .font(.system(size: 12, weight: .regular))
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                }
+                .padding(.horizontal, 20)
+                .padding(.bottom, 14)
+
+            case .disabled:
+                EmptyView()
             }
         }
-        .frame(width: 300)
+        .animation(.easeInOut(duration: 0.25), value: forcedBreakManager.phase == .finishUp)
     }
 
-    private func snoozeRow(showAll: Bool) -> some View {
+    private var extendedSnoozeRow: some View {
         HStack(spacing: 6) {
-            if showAll {
-                Text("Snooze")
-                    .font(.system(size: 12, weight: .regular))
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
-                    .fixedSize()
-                Spacer()
-            }
-
-            if showAll {
-                chip("15m") { reminderManager.snooze(minutes: 15) }
-                chip("30m") { reminderManager.snooze(minutes: 30) }
-                chip("45m") { reminderManager.snooze(minutes: 45) }
-            }
             chip("1h") { reminderManager.snooze(minutes: 60) }
             if vlcMonitor.isVLCRunning {
                 SnoozeChip(vlcIcon: true, accentGold: accentGold, accentGoldDim: accentGoldDim) {
@@ -217,12 +338,14 @@ struct SettingsView: View {
                     dismiss()
                 }
             }
-            if !showAll { Spacer() }
+            Spacer()
         }
-        .padding(.horizontal, 16)
+        .padding(.horizontal, 20)
         .padding(.bottom, 12)
         .transition(.opacity.combined(with: .move(edge: .top)))
     }
+
+    // MARK: - Helpers
 
     private func chip(_ title: String, action: @escaping () -> Void) -> some View {
         SnoozeChip(title, accentGold: accentGold, accentGoldDim: accentGoldDim) {
@@ -232,73 +355,12 @@ struct SettingsView: View {
         }
     }
 
-    private var breakCountdownText: String {
-        let secs = forcedBreakManager.workSecondsRemaining
-        let m = secs / 60
-        let s = secs % 60
-        return "Break in \(m):\(String(format: "%02d", s))"
-    }
-
-    private var breakRow: some View {
-        HStack(spacing: 6) {
-            switch forcedBreakManager.phase {
-            case .work:
-                Text(breakCountdownText)
-                    .font(.system(size: 12, weight: .regular))
-                    .foregroundStyle(.secondary)
-                Spacer()
-                SnoozeChip("Break Now", accentGold: accentGold, accentGoldDim: accentGoldDim) {
-                    NSApp.keyWindow?.close()
-                    forcedBreakManager.startBreak()
-                }
-            case .finishUp:
-                Text("Time to take a break")
-                    .font(.system(size: 12, weight: .regular))
-                    .foregroundStyle(.secondary)
-                Spacer()
-                SnoozeChip("Snooze", accentGold: accentGold, accentGoldDim: accentGoldDim) {
-                    forcedBreakManager.snooze()
-                    dismiss()
-                }
-                SnoozeChip("Start Break", accentGold: accentGold, accentGoldDim: accentGoldDim) {
-                    NSApp.keyWindow?.close()
-                    forcedBreakManager.startBreak()
-                }
-            case .snoozed:
-                Text("Break snoozed")
-                    .font(.system(size: 12, weight: .regular))
-                    .foregroundStyle(.secondary)
-                Spacer()
-                SnoozeChip("Start Break", accentGold: accentGold, accentGoldDim: accentGoldDim) {
-                    NSApp.keyWindow?.close()
-                    forcedBreakManager.startBreak()
-                }
-            case .onBreak:
-                Text("On break")
-                    .font(.system(size: 12, weight: .regular))
-                    .foregroundStyle(.secondary)
-                Spacer()
-            case .breakOver:
-                Text("Break over")
-                    .font(.system(size: 12, weight: .regular))
-                    .foregroundStyle(.secondary)
-                Spacer()
-            case .disabled:
-                EmptyView()
-            }
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
-        .animation(.easeInOut(duration: 0.25), value: forcedBreakManager.phase == .finishUp)
-    }
-
     private var separator: some View {
         Rectangle()
             .fill(.primary.opacity(0.08))
             .frame(height: 1)
-            .padding(.horizontal, 12)
+            .padding(.horizontal, 16)
     }
-
 }
 
 // VLC traffic cone silhouette
