@@ -28,14 +28,29 @@ final class ReminderManager: NSObject, ObservableObject, UNUserNotificationCente
         }
     }
 
+    @Published var notificationsEnabled: Bool {
+        didSet {
+            UserDefaults.standard.set(notificationsEnabled, forKey: "notificationsEnabled")
+        }
+    }
+
     @Published var soundEnabled: Bool {
         didSet {
             UserDefaults.standard.set(soundEnabled, forKey: "soundEnabled")
         }
     }
 
+    @Published var dropAnimationEnabled: Bool {
+        didSet {
+            UserDefaults.standard.set(dropAnimationEnabled, forKey: "dropAnimationEnabled")
+        }
+    }
+
     var topicManager: TopicManager?
     var onOpenPopover: (() -> Void)?
+    #if os(macOS)
+    var dropAnimationController: DropAnimationController?
+    #endif
 
     private var timer: Timer?
     private var lastNotificationDate: Date = Date()
@@ -72,7 +87,9 @@ final class ReminderManager: NSObject, ObservableObject, UNUserNotificationCente
             self.isActive = activeDefault
         }
         self.intervalMinutes = UserDefaults.standard.object(forKey: "intervalMinutes") as? Int ?? 5
+        self.notificationsEnabled = UserDefaults.standard.object(forKey: "notificationsEnabled") as? Bool ?? true
         self.soundEnabled = UserDefaults.standard.object(forKey: "soundEnabled") as? Bool ?? true
+        self.dropAnimationEnabled = UserDefaults.standard.object(forKey: "dropAnimationEnabled") as? Bool ?? false
         super.init()
 
         let center = UNUserNotificationCenter.current()
@@ -195,18 +212,25 @@ final class ReminderManager: NSObject, ObservableObject, UNUserNotificationCente
                 notificationSoundPlayer?.play()
             }
         }
+        #if os(macOS)
+        if dropAnimationEnabled {
+            dropAnimationController?.play()
+        }
+        #endif
 
-        let id = UUID().uuidString
-        let request = UNNotificationRequest(
-            identifier: id,
-            content: content,
-            trigger: nil
-        )
-        let center = UNUserNotificationCenter.current()
-        center.add(request)
+        if notificationsEnabled {
+            let id = UUID().uuidString
+            let request = UNNotificationRequest(
+                identifier: id,
+                content: content,
+                trigger: nil
+            )
+            let center = UNUserNotificationCenter.current()
+            center.add(request)
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 8) {
-            center.removeDeliveredNotifications(withIdentifiers: [id])
+            DispatchQueue.main.asyncAfter(deadline: .now() + 8) {
+                center.removeDeliveredNotifications(withIdentifiers: [id])
+            }
         }
     }
 

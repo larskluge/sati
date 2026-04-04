@@ -29,6 +29,7 @@ final class AppState: ObservableObject {
         peerSyncManager = sync
         settingsWindowController = SettingsWindowController(topicManager: topicManager, reminderManager: reminderManager, peerSyncManager: sync, forcedBreakManager: forcedBreakManager)
         reminderManager.connectVLCMonitor(vlcMonitor)
+        reminderManager.dropAnimationController = DropAnimationController()
         // StatusBarController created after all dependencies are ready
         statusBarController = StatusBarController(
             reminderManager: reminderManager,

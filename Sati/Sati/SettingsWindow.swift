@@ -536,6 +536,16 @@ private struct SettingsContentView: View {
                     Divider().padding(.leading, 40)
 
                     settingsToggleRow(
+                        icon: "bell.badge",
+                        iconColor: .purple,
+                        title: "System Notifications",
+                        subtitle: "Show banner every interval",
+                        isOn: $reminderManager.notificationsEnabled
+                    )
+
+                    Divider().padding(.leading, 40)
+
+                    settingsToggleRow(
                         icon: "speaker.wave.2",
                         iconColor: .pink,
                         title: "Notification Sound",
@@ -550,6 +560,16 @@ private struct SettingsContentView: View {
                             }
                         }
                     }
+
+                    Divider().padding(.leading, 40)
+
+                    settingsToggleRow(
+                        icon: "drop",
+                        iconColor: .cyan,
+                        title: "Drop Animation",
+                        subtitle: "Water ripple on screen",
+                        isOn: $reminderManager.dropAnimationEnabled
+                    )
                 }
                 .padding(.vertical, 2)
             }
