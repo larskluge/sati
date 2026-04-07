@@ -319,6 +319,15 @@ final class DropAnimationController {
     private var stream: SCStream?
 
     func play() {
+        // Re-entry guard: if a previous animation is still in flight, tear it
+        // down before starting a new one. Otherwise the old SCStream leaks and
+        // keeps capturing the screen forever (~10% CPU, no visible animation,
+        // because the old renderer's onFinished will tear down the *new*
+        // stream and leave the old one orphaned).
+        if stream != nil || window != nil {
+            tearDown()
+        }
+
         guard let device = MTLCreateSystemDefaultDevice(),
               let screen = NSScreen.main else { return }
 
@@ -351,8 +360,9 @@ final class DropAnimationController {
             aspectRatio: aspectRatio,
             screenHeight: Float(frame.height)
         )
-        ren.onFinished = { [weak self] in
-            self?.tearDown()
+        ren.onFinished = { [weak self, weak ren] in
+            guard let self = self, let ren = ren, self.renderer === ren else { return }
+            self.tearDown()
         }
         view.delegate = ren
 
