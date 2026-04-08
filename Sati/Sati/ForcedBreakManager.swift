@@ -15,9 +15,14 @@ enum ForcedBreakPhase: Equatable {
 final class ForcedBreakManager: ObservableObject {
 
     @Published var phase: ForcedBreakPhase = .work
-    @Published var workSecondsRemaining: Int = 0
-    @Published var breakSecondsRemaining: Int = 0
-    @Published var overtimeSeconds: Int = 0
+
+    // NOT @Published: these tick every second. Publishing them would invalidate
+    // the SwiftUI popover body every second even when hidden, causing continuous
+    // layout passes on NSHostingView (~10% CPU). Views that display these values
+    // should use TimelineView so they only re-read while actually visible.
+    var workSecondsRemaining: Int = 0
+    var breakSecondsRemaining: Int = 0
+    var overtimeSeconds: Int = 0
 
     @Published var breakEnabled: Bool {
         didSet { UserDefaults.standard.set(breakEnabled, forKey: "breakEnabled") }

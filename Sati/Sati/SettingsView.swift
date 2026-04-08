@@ -225,28 +225,33 @@ struct SettingsView: View {
         VStack(spacing: 0) {
             switch forcedBreakManager.phase {
             case .work:
-                VStack(spacing: 14) {
-                    GeometryReader { geo in
-                        ZStack(alignment: .leading) {
-                            RoundedRectangle(cornerRadius: 3)
-                                .fill(.primary.opacity(0.06))
-                                .frame(height: 6)
-                            RoundedRectangle(cornerRadius: 3)
-                                .fill(accentGold.opacity(0.5))
-                                .frame(width: geo.size.width * breakProgress, height: 6)
+                // TimelineView only ticks while the popover is actually visible,
+                // so hidden popovers do no layout work. forcedBreakManager's
+                // countdown fields are intentionally NOT @Published.
+                TimelineView(.periodic(from: .now, by: 1.0)) { _ in
+                    VStack(spacing: 14) {
+                        GeometryReader { geo in
+                            ZStack(alignment: .leading) {
+                                RoundedRectangle(cornerRadius: 3)
+                                    .fill(.primary.opacity(0.06))
+                                    .frame(height: 6)
+                                RoundedRectangle(cornerRadius: 3)
+                                    .fill(accentGold.opacity(0.5))
+                                    .frame(width: geo.size.width * breakProgress, height: 6)
+                            }
                         }
-                    }
-                    .frame(height: 6)
+                        .frame(height: 6)
 
-                    HStack {
-                        Text("Break in \(breakCountdownText)")
-                            .font(.system(size: 12, weight: .regular))
-                            .foregroundStyle(.secondary)
-                            .monospacedDigit()
-                        Spacer()
-                        SnoozeChip("Break Now", accentGold: accentGold, accentGoldDim: accentGoldDim) {
-                            NSApp.keyWindow?.close()
-                            forcedBreakManager.startBreak()
+                        HStack {
+                            Text("Break in \(breakCountdownText)")
+                                .font(.system(size: 12, weight: .regular))
+                                .foregroundStyle(.secondary)
+                                .monospacedDigit()
+                            Spacer()
+                            SnoozeChip("Break Now", accentGold: accentGold, accentGoldDim: accentGoldDim) {
+                                NSApp.keyWindow?.close()
+                                forcedBreakManager.startBreak()
+                            }
                         }
                     }
                 }
