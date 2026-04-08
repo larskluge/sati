@@ -50,10 +50,28 @@ final class ReminderManager: NSObject, ObservableObject, UNUserNotificationCente
     var onOpenPopover: (() -> Void)?
     #if os(macOS)
     var dropAnimationController: DropAnimationController?
+    weak var forcedBreakManager: ForcedBreakManager?
     #endif
 
     private var timer: Timer?
-    private var lastNotificationDate: Date = Date()
+    var lastNotificationDate: Date = Date()
+    private var wasSuppressedByBreak: Bool = false
+
+    #if os(macOS)
+    /// True when ForcedBreakManager is in a phase during which reminders must
+    /// not fire (anything that means "the user is on/near a break").
+    var isSuppressedByBreak: Bool {
+        guard let phase = forcedBreakManager?.phase else { return false }
+        switch phase {
+        case .finishUp, .snoozed, .onBreak, .breakOver:
+            return true
+        case .disabled, .work:
+            return false
+        }
+    }
+    #else
+    var isSuppressedByBreak: Bool { false }
+    #endif
     private var cancellables = Set<AnyCancellable>()
     private var notificationSoundPlayer: AVAudioPlayer?
 
@@ -176,13 +194,27 @@ final class ReminderManager: NSObject, ObservableObject, UNUserNotificationCente
         lastNotificationDate = Date()
     }
 
-    private func tick() {
+    func tick() {
         guard isActive else { return }
         if isSnoozed {
             if let until = snoozeUntil, until <= Date() {
                 snoozeUntil = nil
                 lastNotificationDate = Date()
             }
+            return
+        }
+
+        // Suppress reminders while ForcedBreakManager is in a break-adjacent
+        // phase. On the falling edge (phase just cleared), reset
+        // lastNotificationDate so a fresh interval must elapse — the break
+        // itself counts as the mindfulness moment.
+        if isSuppressedByBreak {
+            wasSuppressedByBreak = true
+            return
+        }
+        if wasSuppressedByBreak {
+            wasSuppressedByBreak = false
+            lastNotificationDate = Date()
             return
         }
 
