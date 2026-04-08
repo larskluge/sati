@@ -35,16 +35,11 @@ pull_watch() {
 
 pull_mac() {
     echo "=== macOS ==="
-    MAC_LOG="$HOME/Library/Containers/com.sati.Sati/Data/Documents/sati.log"
-    if [ ! -f "$MAC_LOG" ]; then
-        # Non-sandboxed fallback
-        DOCS=$(find "$HOME/Library" -path "*/com.sati.Sati*/Documents/sati.log" 2>/dev/null | head -1)
-        [ -n "$DOCS" ] && MAC_LOG="$DOCS"
-    fi
+    MAC_LOG="$HOME/Library/Logs/Sati/sati.log"
     if [ -f "$MAC_LOG" ]; then
         cat "$MAC_LOG"
     else
-        echo "(no log file yet)"
+        echo "(no log file yet at $MAC_LOG)"
     fi
 }
 

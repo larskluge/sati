@@ -7,19 +7,31 @@ import os
 /// Usage:  SatiLog.info("WCSender", "sent context")
 ///         SatiLog.error("WCRecv", "decode failed")
 ///
-/// File location:  <AppContainer>/Documents/sati.log
+/// File location:
+///   macOS:   ~/Library/Logs/Sati/sati.log    (not TCC-protected; shows up in Console.app)
+///   iOS:     <AppContainer>/Documents/sati.log
+///   watchOS: <AppContainer>/Documents/sati.log
 /// Pull from iOS:  xcrun devicectl device copy from --device <name> \
 ///                   --domain-type appDataContainer --domain-identifier com.sati.Sati \
 ///                   --source Documents/sati.log --destination /tmp/sati-ios.log
 /// Pull from watch: same with watch device name and com.sati.Sati.watchkitapp
-/// macOS: ~/Library/Containers/com.sati.Sati/Data/Documents/sati.log (or direct path below)
 struct SatiLog {
     private static let maxSize = 256 * 1024  // 256 KB ring buffer
     private static let osLog = Logger(subsystem: "com.sati.Sati", category: "Sati")
 
     private static let logURL: URL = {
-        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+        let fm = FileManager.default
+        #if os(macOS)
+        // Write to ~/Library/Logs/Sati/sati.log. Documents is TCC-protected on
+        // non-sandboxed macOS apps and triggers a permission prompt.
+        let library = fm.urls(for: .libraryDirectory, in: .userDomainMask).first!
+        let dir = library.appendingPathComponent("Logs/Sati", isDirectory: true)
+        try? fm.createDirectory(at: dir, withIntermediateDirectories: true)
+        return dir.appendingPathComponent("sati.log")
+        #else
+        let docs = fm.urls(for: .documentDirectory, in: .userDomainMask).first!
         return docs.appendingPathComponent("sati.log")
+        #endif
     }()
 
     private static let dateFormatter: DateFormatter = {
