@@ -564,11 +564,11 @@ private struct SettingsContentView: View {
                     Divider().padding(.leading, 40)
 
                     settingsToggleRow(
-                        icon: "drop",
-                        iconColor: .cyan,
-                        title: "Drop Animation",
-                        subtitle: "Water ripple on screen",
-                        isOn: $reminderManager.dropAnimationEnabled
+                        icon: "sparkles",
+                        iconColor: .yellow,
+                        title: "Fireflies",
+                        subtitle: "Glowing fireflies across the screen",
+                        isOn: $reminderManager.firefliesEnabled
                     )
                 }
                 .padding(.vertical, 2)

@@ -40,16 +40,16 @@ final class ReminderManager: NSObject, ObservableObject, UNUserNotificationCente
         }
     }
 
-    @Published var dropAnimationEnabled: Bool {
+    @Published var firefliesEnabled: Bool {
         didSet {
-            UserDefaults.standard.set(dropAnimationEnabled, forKey: "dropAnimationEnabled")
+            UserDefaults.standard.set(firefliesEnabled, forKey: "firefliesEnabled")
         }
     }
 
     var topicManager: TopicManager?
     var onOpenPopover: (() -> Void)?
     #if os(macOS)
-    var dropAnimationController: DropAnimationController?
+    var fireflyAnimationController: FireflyAnimationController?
     weak var forcedBreakManager: ForcedBreakManager?
     #endif
 
@@ -107,7 +107,7 @@ final class ReminderManager: NSObject, ObservableObject, UNUserNotificationCente
         self.intervalMinutes = UserDefaults.standard.object(forKey: "intervalMinutes") as? Int ?? 5
         self.notificationsEnabled = UserDefaults.standard.object(forKey: "notificationsEnabled") as? Bool ?? true
         self.soundEnabled = UserDefaults.standard.object(forKey: "soundEnabled") as? Bool ?? true
-        self.dropAnimationEnabled = UserDefaults.standard.object(forKey: "dropAnimationEnabled") as? Bool ?? false
+        self.firefliesEnabled = UserDefaults.standard.object(forKey: "firefliesEnabled") as? Bool ?? false
         super.init()
 
         let center = UNUserNotificationCenter.current()
@@ -245,8 +245,8 @@ final class ReminderManager: NSObject, ObservableObject, UNUserNotificationCente
             }
         }
         #if os(macOS)
-        if dropAnimationEnabled {
-            dropAnimationController?.play()
+        if firefliesEnabled {
+            fireflyAnimationController?.play()
         }
         #endif
 
