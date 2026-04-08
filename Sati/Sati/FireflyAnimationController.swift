@@ -106,14 +106,19 @@ final class FireflyAnimationController: NSObject, MTKViewDelegate {
         if window == nil {
             setup(on: screen)
         }
-        guard let window = window else { return }
+        guard let window = window, let mtkView = mtkView else { return }
 
         window.setFrame(screen.frame, display: false)
-        mtkView?.frame = window.contentLayoutRect
+        mtkView.frame = window.contentLayoutRect
         aspect = Float(screen.frame.width / screen.frame.height)
         uniforms.aspect = aspect
 
+        // Arm time BEFORE unpausing the display link so no frame ever renders
+        // with a stale startTime (which would land fireflies at a random point
+        // in their 5s cycle — visible as a pop on entry).
         startTime = CACurrentMediaTime()
+        uniforms.time = 0
+        mtkView.isPaused = false
         window.orderFrontRegardless()
 
         hideTimer?.invalidate()
@@ -166,7 +171,9 @@ final class FireflyAnimationController: NSObject, MTKViewDelegate {
         view.clearColor = MTLClearColor(red: 0, green: 0, blue: 0, alpha: 0)
         view.layer?.isOpaque = false
         (view.layer as? CAMetalLayer)?.isOpaque = false
-        view.isPaused = false
+        // Keep paused until play() sets startTime, otherwise the display link
+        // can draw one or more frames with stale time.
+        view.isPaused = true
         view.enableSetNeedsDisplay = false
         view.delegate = self
 
@@ -180,6 +187,7 @@ final class FireflyAnimationController: NSObject, MTKViewDelegate {
     private func hide() {
         hideTimer?.invalidate()
         hideTimer = nil
+        mtkView?.isPaused = true
         window?.orderOut(nil)
         SatiLog.info("Fireflies", "hidden")
     }
