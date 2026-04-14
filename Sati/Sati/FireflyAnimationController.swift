@@ -50,7 +50,7 @@ final class FireflyAnimationController: NSObject, MTKViewDelegate {
         uv.x *= u.aspect;
         float t = u.time;
         float cycle = fmod(t, 5.0);
-        float3 col = float3(0.0);
+        float3 tint = float3(0.95, 0.85, 0.45);
         float alpha = 0.0;
 
         const int N = 40;
@@ -74,16 +74,15 @@ final class FireflyAnimationController: NSObject, MTKViewDelegate {
             pulse *= alive * lifeEnv;
 
             float d = length(uv - p);
-            float core = exp(-d * 250.0) * 1.0;
+            float core = exp(-d * 250.0);
             float glow = exp(-d * 30.0) * 0.5;
             float v = (core + glow) * pulse;
 
-            float3 tint = float3(0.95, 0.95, 0.55);
-            col += tint * v;
             alpha = max(alpha, v);
         }
 
-        return float4(col, clamp(alpha, 0.0, 1.0));
+        alpha = clamp(alpha, 0.0, 1.0);
+        return float4(tint * alpha, alpha);
     }
     """
 
@@ -143,7 +142,7 @@ final class FireflyAnimationController: NSObject, MTKViewDelegate {
             d.fragmentFunction = lib.makeFunction(name: "fragment_main")
             d.colorAttachments[0].pixelFormat = .bgra8Unorm
             d.colorAttachments[0].isBlendingEnabled = true
-            d.colorAttachments[0].sourceRGBBlendFactor = .sourceAlpha
+            d.colorAttachments[0].sourceRGBBlendFactor = .one
             d.colorAttachments[0].destinationRGBBlendFactor = .oneMinusSourceAlpha
             d.colorAttachments[0].sourceAlphaBlendFactor = .one
             d.colorAttachments[0].destinationAlphaBlendFactor = .oneMinusSourceAlpha
