@@ -124,12 +124,11 @@ final class FireflyAnimationController: NSObject, MTKViewDelegate {
         hideTimer = Timer.scheduledTimer(withTimeInterval: duration, repeats: false) { [weak self] _ in
             self?.hide()
         }
-        SatiLog.info("Fireflies", "play (\(Int(duration))s)")
     }
 
     private func setup(on screen: NSScreen) {
         guard let device = MTLCreateSystemDefaultDevice() else {
-            SatiLog.info("Fireflies", "no Metal device")
+            SatiLog.error("Fireflies", "no Metal device")
             return
         }
         self.device = device
@@ -148,7 +147,7 @@ final class FireflyAnimationController: NSObject, MTKViewDelegate {
             d.colorAttachments[0].destinationAlphaBlendFactor = .oneMinusSourceAlpha
             self.pipeline = try device.makeRenderPipelineState(descriptor: d)
         } catch {
-            SatiLog.info("Fireflies", "shader compile failed: \(error)")
+            SatiLog.error("Fireflies", "shader compile failed: \(error)")
             return
         }
 
@@ -188,7 +187,6 @@ final class FireflyAnimationController: NSObject, MTKViewDelegate {
         hideTimer = nil
         mtkView?.isPaused = true
         window?.orderOut(nil)
-        SatiLog.info("Fireflies", "hidden")
     }
 
     // MARK: - MTKViewDelegate

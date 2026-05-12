@@ -42,6 +42,7 @@ final class ForcedBreakManager: ObservableObject {
 
     private var timer: Timer?
     private var breakSoundPlayer: AVAudioPlayer?
+    private var breakStartedAt: Date?
     private var snoozeSecondsRemaining: Int = 0
     var screenLockedAt: Date?
     private var phaseBeforeLock: ForcedBreakPhase?
@@ -98,7 +99,7 @@ final class ForcedBreakManager: ObservableObject {
 
     private func screenDidSleep() {
         guard phase != .disabled, !paused else { return }
-        SatiLog.info("Break", "screen locked, pausing timer (phase: \(phase))")
+        SatiLog.info("Break", "screen locked, paused")
         screenLockedAt = Date()
         phaseBeforeLock = phase
         paused = true
@@ -115,12 +116,12 @@ final class ForcedBreakManager: ObservableObject {
         screenLockedAt = nil
 
         if lockedSeconds >= breakThreshold {
-            SatiLog.info("Break", "screen unlocked after \(lockedSeconds)s (>= break duration), resetting work timer")
+            SatiLog.info("Break", "screen unlocked, counted as break", extra: [("d", "\(lockedSeconds / 60)m\(lockedSeconds % 60)s")])
             vignetteController.hide()
             breakController.dismiss()
             resetWorkTimer()
         } else {
-            SatiLog.info("Break", "screen unlocked after \(lockedSeconds)s (< break duration), resuming")
+            SatiLog.info("Break", "screen unlocked, resuming", extra: [("d", "\(lockedSeconds / 60)m\(lockedSeconds % 60)s")])
             if let prev = phaseBeforeLock, prev == .finishUp {
                 phase = .finishUp
                 vignetteController.fadeIn(duration: 0.5)
@@ -132,8 +133,9 @@ final class ForcedBreakManager: ObservableObject {
     // MARK: - Actions
 
     func startBreak() {
-        SatiLog.info("Break", "starting break (\(breakDurationMinutes) min)")
+        SatiLog.info("Break", "starting break", extra: [("d", "\(breakDurationMinutes)m")])
         vignetteController.fadeOut(duration: 0.5)
+        breakStartedAt = Date()
         phase = .onBreak
         breakSecondsRemaining = breakDurationMinutes * 60
         breakController.show(seconds: breakSecondsRemaining, breakSoundEnabled: breakSoundEnabled) { [weak self] in
@@ -142,14 +144,25 @@ final class ForcedBreakManager: ObservableObject {
     }
 
     func snooze() {
-        SatiLog.info("Break", "snoozed for 2 min")
+        SatiLog.info("Break", "snoozed", extra: [("d", "2m")])
         vignetteController.fadeOut(duration: 0.5)
         phase = .snoozed
         snoozeSecondsRemaining = 2 * 60
     }
 
     func dismissBreak() {
-        SatiLog.info("Break", "break dismissed")
+        let total = breakDurationMinutes * 60
+        var attrs: [(String, String)] = [("d", "\(breakDurationMinutes)m")]
+        if phase == .onBreak {
+            let actual = total - breakSecondsRemaining
+            attrs.append(("actual", "\(actual / 60)m\(actual % 60)s"))
+            SatiLog.info("Break", "break ended early", extra: attrs)
+        } else {
+            let actual = total + overtimeSeconds
+            attrs.append(("actual", "\(actual / 60)m\(actual % 60)s"))
+            SatiLog.info("Break", "break over", extra: attrs)
+        }
+        breakStartedAt = nil
         breakController.dismiss()
         resetWorkTimer()
     }
@@ -177,7 +190,7 @@ final class ForcedBreakManager: ObservableObject {
         case .work:
             workSecondsRemaining -= 1
             if workSecondsRemaining <= 0 {
-                SatiLog.info("Break", "work timer elapsed, showing vignette")
+                SatiLog.info("Break", "break due")
                 phase = .finishUp
                 vignetteController.fadeIn(duration: 5.0)
             }
@@ -188,7 +201,7 @@ final class ForcedBreakManager: ObservableObject {
         case .snoozed:
             snoozeSecondsRemaining -= 1
             if snoozeSecondsRemaining <= 0 {
-                SatiLog.info("Break", "snooze elapsed, showing vignette")
+                SatiLog.info("Break", "break due")
                 phase = .finishUp
                 vignetteController.fadeIn(duration: 5.0)
             }
@@ -197,7 +210,6 @@ final class ForcedBreakManager: ObservableObject {
             breakSecondsRemaining -= 1
             breakController.updateTime(breakSecondsRemaining)
             if breakSecondsRemaining <= 0 {
-                SatiLog.info("Break", "break complete, waiting for user to continue")
                 phase = .breakOver
                 overtimeSeconds = 0
                 playBreakSound()
@@ -213,7 +225,7 @@ final class ForcedBreakManager: ObservableObject {
     private func playBreakSound() {
         guard breakSoundEnabled else { return }
         guard let url = Bundle.main.url(forResource: "deep-bowl", withExtension: "caf") else {
-            SatiLog.info("Break", "deep-bowl.caf not found")
+            SatiLog.error("Break", "break sound not found")
             return
         }
         breakSoundPlayer = try? AVAudioPlayer(contentsOf: url)
