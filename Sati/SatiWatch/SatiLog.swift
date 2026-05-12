@@ -1,11 +1,6 @@
 import Foundation
 import os
 
-/// Dual logger for watchOS — same as main target's SatiLog.
-/// File: <AppContainer>/Documents/sati.log
-/// Pull: xcrun devicectl device copy from --device <watch> \
-///         --domain-type appDataContainer --domain-identifier com.sati.Sati.watchkitapp \
-///         --source Documents/sati.log --destination /tmp/sati-watch.log
 struct SatiLog {
     private static let maxSize = 256 * 1024
     private static let osLog = Logger(subsystem: "com.sati.Sati", category: "Sati")
@@ -13,32 +8,46 @@ struct SatiLog {
     private static let logURL: URL = {
         let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
         try? FileManager.default.createDirectory(at: docs, withIntermediateDirectories: true)
-        return docs.appendingPathComponent("sati.log")
+        return docs.appendingPathComponent("sati.jsonl")
     }()
 
-    private static let dateFormatter: DateFormatter = {
-        let f = DateFormatter()
-        f.dateFormat = "HH:mm:ss.SSS"
+    private static let isoFormatter: ISO8601DateFormatter = {
+        let f = ISO8601DateFormatter()
+        f.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
         return f
     }()
 
     private static let queue = DispatchQueue(label: "com.sati.log", qos: .utility)
 
-    static func info(_ category: String, _ message: String) {
-        let line = "\(dateFormatter.string(from: Date())) [\(category)] \(message)"
+    static func info(_ category: String, _ message: String, extra: [(String, String)] = []) {
         osLog.info("\(category): \(message)")
-        appendLine(line)
+        appendJSON(level: "info", category: category, message: message, extra: extra)
     }
 
     static func warning(_ category: String, _ message: String) {
-        let line = "\(dateFormatter.string(from: Date())) ⚠ [\(category)] \(message)"
         osLog.warning("\(category): \(message)")
-        appendLine(line)
+        appendJSON(level: "warning", category: category, message: message)
     }
 
     static func error(_ category: String, _ message: String) {
-        let line = "\(dateFormatter.string(from: Date())) ✗ [\(category)] \(message)"
         osLog.error("\(category): \(message)")
+        appendJSON(level: "error", category: category, message: message)
+    }
+
+    private static func appendJSON(level: String, category: String, message: String, extra: [(String, String)] = []) {
+        let ts = isoFormatter.string(from: Date())
+        let escaped = message
+            .replacingOccurrences(of: "\\", with: "\\\\")
+            .replacingOccurrences(of: "\"", with: "\\\"")
+            .replacingOccurrences(of: "\n", with: "\\n")
+        var line = "{\"t\":\"\(ts)\",\"l\":\"\(level)\",\"c\":\"\(category)\",\"m\":\"\(escaped)\""
+        for (key, value) in extra {
+            let escapedValue = value
+                .replacingOccurrences(of: "\\", with: "\\\\")
+                .replacingOccurrences(of: "\"", with: "\\\"")
+            line += ",\"\(key)\":\"\(escapedValue)\""
+        }
+        line += "}"
         appendLine(line)
     }
 
