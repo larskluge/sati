@@ -354,11 +354,9 @@ private struct SettingsContentView: View {
                                 .foregroundStyle(.primary)
                                 .multilineTextAlignment(.center)
                                 .frame(width: 36)
-                                .onSubmit {
-                                    if let val = Int(workDurationText), val >= 1 {
+                                .onChange(of: workDurationText) { _, newValue in
+                                    if let val = Int(newValue), val >= 1 {
                                         forcedBreakManager.workDurationMinutes = val
-                                    } else {
-                                        workDurationText = "\(forcedBreakManager.workDurationMinutes)"
                                     }
                                 }
 
@@ -412,11 +410,9 @@ private struct SettingsContentView: View {
                                 .foregroundStyle(.primary)
                                 .multilineTextAlignment(.center)
                                 .frame(width: 36)
-                                .onSubmit {
-                                    if let val = Int(breakDurationText), val >= 1 {
+                                .onChange(of: breakDurationText) { _, newValue in
+                                    if let val = Int(newValue), val >= 1 {
                                         forcedBreakManager.breakDurationMinutes = val
-                                    } else {
-                                        breakDurationText = "\(forcedBreakManager.breakDurationMinutes)"
                                     }
                                 }
 
@@ -511,11 +507,9 @@ private struct SettingsContentView: View {
                             .foregroundStyle(.primary)
                             .multilineTextAlignment(.center)
                             .frame(width: 36)
-                            .onSubmit {
-                                if let val = Int(intervalText), val >= 1 {
+                            .onChange(of: intervalText) { _, newValue in
+                                if let val = Int(newValue), val >= 1 {
                                     reminderManager.intervalMinutes = val
-                                } else {
-                                    intervalText = "\(reminderManager.intervalMinutes)"
                                 }
                             }
 
