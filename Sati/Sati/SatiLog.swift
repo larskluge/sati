@@ -2,7 +2,7 @@ import Foundation
 import os
 
 struct SatiLog {
-    private static let maxSize = 256 * 1024
+    private static let maxSize = 10 * 1024 * 1024
     private static let osLog = Logger(subsystem: "com.sati.Sati", category: "Sati")
 
     private static let logURL: URL = {

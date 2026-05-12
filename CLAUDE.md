@@ -53,7 +53,7 @@ macOS-specific files are wrapped in `#if os(macOS)`. iOS-specific code uses `#if
 
 **`SyncFormatting.swift`** — Shared utility enum for relative-time sync status strings (e.g. "Synced 15s ago"). Uses `RelativeDateTimeFormatter` with `.abbreviated` style. Copied to `SatiWatch/` for the watchOS target.
 
-**`SatiLog.swift`** — Cross-platform logging. Writes to both `os.Logger` and a 256KB ring-buffer JSONL file at `Documents/sati.jsonl`. Each line is `{"t":"2026-05-12T01:31:04.296Z","l":"info","c":"Category","m":"message"}`. Use `SatiLog.info("Category", "message")`. Log files can be pulled from devices via `logs.sh`.
+**`SatiLog.swift`** — Cross-platform logging. Writes to both `os.Logger` and a 10MB ring-buffer JSONL file at `Documents/sati.jsonl`. Each line is `{"t":"2026-05-12T01:31:04.296Z","l":"info","c":"Category","m":"message"}`. Use `SatiLog.info("Category", "message")`. Log files can be pulled from devices via `logs.sh`.
 
 ### watchOS Target (`Sati/SatiWatch/`)
 
@@ -112,7 +112,7 @@ macOS aggressively caches app icons. `make build` runs `lsregister -f` to force 
 
 ## Logging
 
-All platforms use `SatiLog` which writes to both `os.Logger` (subsystem `com.sati.Sati`) and a file at `Documents/sati.jsonl` (256KB ring buffer, JSONL format). Usage: `SatiLog.info("Category", "message")`.
+All platforms use `SatiLog` which writes to both `os.Logger` (subsystem `com.sati.Sati`) and a file at `Documents/sati.jsonl` (10MB ring buffer, JSONL format). Usage: `SatiLog.info("Category", "message")`.
 
 ```bash
 bash logs.sh          # pull and display logs from all platforms
