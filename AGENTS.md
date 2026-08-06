@@ -37,6 +37,10 @@ macOS-specific files are wrapped in `#if os(macOS)`. iOS-specific code uses `#if
 
 **`TopicManager.swift`** — Platform-agnostic. Manages rotating "topics of investigation" using `TopicRotation`. Accepts `UserDefaults` via init for test isolation. Persists topics and active offset to `UserDefaults`. `offset` is `@Published` so sync managers observe active topic changes.
 
+**`ForcedBreakManager.swift`** — macOS-only (`#if os(macOS)`). Drives the forced break cycle on a 1-second timer through `ForcedBreakPhase`: `work` (40 min) → `finishUp` (vignette, break due) → `onBreak` (5 min full-screen countdown) → `breakOver` (overtime until "Continue") → `work`. `snoozed` defers a due break by 2 min. Owns `VignetteOverlayController` and `BreakOverlayController`. `ReminderManager` suppresses mindfulness reminders during every non-`work` phase.
+
+Screen lock and display sleep start an *away* period (`awayStartedAt`), freezing all countdowns. Time away counts as break time: `returnOutcome(phase:awaySeconds:breakSecondsRemaining:breakSeconds:)` is a pure static decision — during `onBreak` the absence is deducted from the break (completing it if long enough), `breakOver` ends on any return, and otherwise an absence of at least a full break duration stands in for the break. In every case the work period restarts from the moment of return. A display wake into a still-locked session is not a return — `screenIsLocked()` reads the window server (`CGSessionCopyCurrentDictionary`) so a dropped notification cannot leave the timers stuck paused; `isScreenLocked` is injectable for tests.
+
 **`VLCMonitor.swift`** — macOS-only (`#if os(macOS)`). Polls `NSWorkspace.shared.runningApplications` every 5s for VLC. When VLC quits and `snoozedForVLC` is set, auto-resumes reminders via Combine subscription.
 
 **`SettingsView.swift`** — macOS-only (`#if os(macOS)`). Popover UI. Contains reusable hover-aware button components (`HoverButton`, `HoverCircleButton`, `SnoozeChip`) and a custom `VLCConeShape`. Uses semantic SwiftUI colors (`.primary`/`.secondary`) for light/dark mode support.
@@ -86,7 +90,7 @@ xcodebuild test -project Sati/Sati.xcodeproj -scheme Sati -destination 'platform
 xcodebuild test -project Sati/Sati.xcodeproj -scheme SatiWatch -destination 'platform=watchOS Simulator,name=Apple Watch Series 11 (46mm)' -only-testing:SatiWatchTests
 ```
 
-**`SatiTests`** (macOS/iOS, hosted in Sati.app) — `TopicRotationTests`, `SyncPayloadTests`, `WatchContextCoderTests`, `TopicManagerTests`. **`SatiWatchTests`** (watchOS, hosted in SatiWatch.app) — `WatchTopicStoreTests`, `WatchTopicRotationTests`, `WatchContextCoderWatchTests`.
+**`SatiTests`** (macOS/iOS, hosted in Sati.app) — `TopicRotationTests`, `SyncPayloadTests`, `SyncFormattingTests`, `WatchContextCoderTests`, `TopicManagerTests`, `ReminderManagerTests`, `ForcedBreakManagerTests`. **`SatiWatchTests`** (watchOS, hosted in SatiWatch.app) — `WatchTopicStoreTests`, `WatchTopicRotationTests`, `WatchContextCoderWatchTests`.
 
 Test targets use the same Swift concurrency settings as production (`SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`). `TopicManager` tests require `@MainActor` annotation and must keep instances alive via a class property to avoid a Swift runtime crash in `@MainActor` ObservableObject deinit during test teardown. `TopicManager` accepts `UserDefaults` via init parameter for test isolation.
 
