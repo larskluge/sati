@@ -1,0 +1,54 @@
+#!/bin/bash
+# Print the UDID of the simulator a CI test job should run on.
+#
+#   pick-simulator <platform> <name-regex> [preferred-name]
+#
+# Takes the newest available <platform> runtime ("iOS", "watchOS") that is no
+# newer than the active Xcode's simulator SDK and has an available device whose
+# name matches <name-regex>, and on it the device named <preferred-name> if there
+# is one, else the last match. The choice is logged to stderr; a machine with no
+# such device fails here, naming what it looked for, rather than handing
+# xcodebuild an empty destination.
+#
+# The SDK cap matters on the hosted runner: its default Xcode (16.x, iOS 18 SDK)
+# sits beside Xcode 26 installs whose 26.x runtimes CoreSimulator also lists, and
+# xcodebuild cannot run on a runtime newer than its SDK ("Unable to find a
+# destination matching").
+#
+# Device names are not hard-coded because they differ by image: the tart-ci
+# golden image has an iPhone 17 Pro that has already done its first boot and
+# whatever Apple Watch model its watchOS runtime supports, while the hosted
+# runner that fork PRs use carries an older Xcode's set. Selecting by UDID also
+# keeps xcodebuild from resolving a name that exists on several runtimes.
+set -euo pipefail
+
+[ $# -ge 2 ] || { echo "usage: pick-simulator <platform> <name-regex> [preferred-name]" >&2; exit 2; }
+platform=$1 pattern=$2 preferred=${3:-}
+
+case $platform in
+  iOS) sdk_name=iphonesimulator ;;
+  watchOS) sdk_name=watchsimulator ;;
+  *) echo "pick-simulator: unsupported platform '$platform' (iOS, watchOS)" >&2; exit 2 ;;
+esac
+sdk=$(xcrun --sdk "$sdk_name" --show-sdk-version)
+
+pick=$(xcrun simctl list -j | jq -r --arg plat "$platform" --arg pat "$pattern" --arg pref "$preferred" --arg sdk "$sdk" '
+  def mm: split(".")[:2] | map(tonumber);
+  .devices as $devs
+  | [ .runtimes[]
+      | select(.isAvailable and (.name | startswith($plat + " ")) and ((.version | mm) <= ($sdk | mm)))
+      | { rt: ., devs: [ ($devs[.identifier] // [])[] | select(.isAvailable and (.name | test($pat))) ] }
+      | select(.devs | length > 0) ]
+  | sort_by(.rt.version | split(".") | map(tonumber))
+  | last // empty
+  | ((.devs | map(select(.name == $pref)) | last) // (.devs | last)) as $d
+  | "\($d.udid)\t\($d.name) on \(.rt.name)"')
+
+if [ -z "$pick" ]; then
+  echo "no available $platform simulator matching /$pattern/ on a runtime at or below the $sdk_name $sdk SDK:" >&2
+  xcrun simctl list runtimes >&2
+  xcrun simctl list devices available >&2
+  exit 1
+fi
+echo "Using simulator: ${pick#*$'\t'}" >&2
+echo "${pick%%$'\t'*}"

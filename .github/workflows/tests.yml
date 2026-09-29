@@ -5,13 +5,34 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
 
+# The jobs need no write scope, and no git credentials once checked out: the
+# self-hosted VM runs the branch's own test code.
+permissions:
+  contents: read
+
+# Every job runs on tart-ci, the on-demand Tart VM runner on the maintainer's Mac
+# (Xcode 26.5, macOS Tahoe), except for PRs whose head is not this repository,
+# which go to the hosted runner, because tart-ci-demand never boots a VM for a
+# fork job. The test compares the head repo's identity rather than its `fork`
+# flag, so a PR whose head repo was deleted (null) also goes to the hosted runner.
+#
+# That expression is not a security boundary: a fork can rewrite this file and
+# ask for the tart labels directly. The boundary is the repo's fork-PR approval
+# policy (all_external_contributors, which tart-ci-demand enforces). Before
+# approving a fork run, check its diff under .github/ for a changed runs-on.
+#
+# The runner expression is defined once, on test-macos, and reused by anchor.
 jobs:
   test-macos:
     name: macOS Tests
-    runs-on: macos-15
+    runs-on: &runner ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository && fromJSON('["macos-15"]') || fromJSON('["self-hosted","macOS","arm64","tart"]') }}
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - name: Run SatiTests on macOS
         run: |
           xcodebuild test \
@@ -27,25 +48,20 @@ jobs:
 
   test-ios:
     name: iOS Tests
-    runs-on: macos-15
+    runs-on: *runner
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - name: Run SatiTests on iOS Simulator
         run: |
-          DEVICE=$(xcrun simctl list devices available iOS -j | python3 -c "
-          import json, sys
-          data = json.load(sys.stdin)
-          for runtime, devices in data['devices'].items():
-              if 'iOS' in runtime:
-                  for d in devices:
-                      if 'iPhone' in d['name']:
-                          print(d['name']); sys.exit()
-          ")
-          echo "Using simulator: $DEVICE"
+          # Prefers the tart-ci image's iPhone 17 Pro, which has done its first boot.
+          DEVICE_ID=$(scripts/ci/pick-simulator iOS iPhone "iPhone 17 Pro")
           xcodebuild test \
             -project Sati/Sati.xcodeproj \
             -scheme Sati \
-            -destination "platform=iOS Simulator,name=$DEVICE" \
+            -destination "platform=iOS Simulator,id=$DEVICE_ID" \
             -only-testing:SatiTests \
             -resultBundlePath TestResults/ios.xcresult \
             CODE_SIGN_IDENTITY="" \
@@ -55,25 +71,19 @@ jobs:
 
   test-watchos:
     name: watchOS Tests
-    runs-on: macos-15
+    runs-on: *runner
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - name: Run SatiWatchTests on watchOS Simulator
         run: |
-          DEVICE=$(xcrun simctl list devices available watchOS -j | python3 -c "
-          import json, sys
-          data = json.load(sys.stdin)
-          for runtime, devices in data['devices'].items():
-              if 'watchOS' in runtime:
-                  for d in devices:
-                      if 'Watch' in d['name']:
-                          print(d['name']); sys.exit()
-          ")
-          echo "Using simulator: $DEVICE"
+          DEVICE_ID=$(scripts/ci/pick-simulator watchOS Watch)
           xcodebuild test \
             -project Sati/Sati.xcodeproj \
             -scheme SatiWatch \
-            -destination "platform=watchOS Simulator,name=$DEVICE" \
+            -destination "platform=watchOS Simulator,id=$DEVICE_ID" \
             -only-testing:SatiWatchTests \
             -resultBundlePath TestResults/watchos.xcresult \
             CODE_SIGN_IDENTITY="" \
