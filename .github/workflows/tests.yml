@@ -12,11 +12,12 @@ on:
 permissions:
   contents: read
 
-# Every job runs on tart-ci, the on-demand Tart VM runner on the maintainer's Mac
-# (Xcode 26.5, macOS Tahoe), except for PRs whose head is not this repository,
-# which go to the hosted runner, because tart-ci-demand never boots a VM for a
-# fork job. The test compares the head repo's identity rather than its `fork`
-# flag, so a PR whose head repo was deleted (null) also goes to the hosted runner.
+# An allowlist: a push, a manual dispatch, or a PR from a branch of this repo runs
+# on tart-ci, the on-demand Tart VM runner on the maintainer's Mac (Xcode 26.5,
+# macOS Tahoe). Anything else — a fork's PR, a PR whose head repo was deleted
+# (null), any event added later — goes to the hosted runner, because
+# tart-ci-demand never boots a VM for a fork job. The PR test compares the head
+# repo's identity rather than its `fork` flag.
 #
 # That expression is not a security boundary: a fork can rewrite this file and
 # ask for the tart labels directly. The boundary is the repo's fork-PR approval
@@ -27,7 +28,7 @@ permissions:
 jobs:
   test-macos:
     name: macOS Tests
-    runs-on: &runner ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository && fromJSON('["macos-15"]') || fromJSON('["self-hosted","macOS","arm64","tart"]') }}
+    runs-on: &runner ${{ (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)) && fromJSON('["self-hosted","macOS","arm64","tart"]') || fromJSON('["macos-15"]') }}
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
